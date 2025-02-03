@@ -1,4 +1,4 @@
-- Navigate to the project directory
+- Navigate to the project directory (/Assignment 1)
 
 - With a fresh python environment active, run the command: pip install -e .
 
