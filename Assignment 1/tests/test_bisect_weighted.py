@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from bisect_weighted import BisInterval
+from src.bisect_weighted import BisInterval
 
 def test_simple_function():
     f = lambda x: x - .5
