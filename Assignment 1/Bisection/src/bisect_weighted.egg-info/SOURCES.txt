@@ -1,0 +1,10 @@
+pyproject.toml
+src/__init__.py
+src/bisect_weighted.py
+src/examples.py
+src/bisect_weighted.egg-info/PKG-INFO
+src/bisect_weighted.egg-info/SOURCES.txt
+src/bisect_weighted.egg-info/dependency_links.txt
+src/bisect_weighted.egg-info/requires.txt
+src/bisect_weighted.egg-info/top_level.txt
+tests/test_bisect_weighted.py
