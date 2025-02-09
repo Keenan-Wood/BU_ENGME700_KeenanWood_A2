@@ -1,6 +1,6 @@
 import numpy as np
 import sympy as sp
-from parametricfunction import ParametricFunction
+from zerosetnewton import ZeroSetNewton
 
 def test_simple_function():
     x, y = sp.symbols('x y')
@@ -13,6 +13,3 @@ def test_simple_function():
     test_fun_pt_a_vec = fun_expr.subs([(x, 1), (y, 1)]).n()
     test_fun_pt_a = sum(element**2 for element in test_fun_pt_a_vec)
     assert abs(param_fun_pt_a - test_fun_pt_a) < 10**-10
-
-test_simple_function()
-v = 2

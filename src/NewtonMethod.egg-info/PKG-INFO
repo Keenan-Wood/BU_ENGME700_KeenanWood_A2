@@ -35,6 +35,7 @@ Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: matplotlib==3.10.0
 Requires-Dist: numpy==1.26.4
+Requires-Dist: sympy
 Requires-Dist: pytest==7.1.2
 Requires-Dist: pytest-cov==3.0.0
 Requires-Dist: scipy==1.12.0
