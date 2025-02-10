@@ -69,59 +69,43 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
 
 #### **What Does the Function Do?**
 
-The `run_bisection_method` function takes:
-- A continuous function $f(x)$,
-- Two bounds $a$ and $b$ where $f(a)$ and $f(b)$ have opposite signs, and
-- A tolerance and a maximum number of iterations.
+The `NewtonMethod` class instantiates with:
+- A symbolic expression, or array of expressions, **fun**
+- A list of the symbolic variables, **vars_indep**
+- A starting point (numpy array), **start_pt**
+- The jacobian, as a matrix of symbolic expressions, **J**: Default **None**
+- The solver tolerance (on the Residual) as a float, **tol**: Default **$10**-12$**
+- The maximum number of iterations as an integer, **max_iter**: Default **$10**3$**
 
-It iteratively computes the root of the function using the bisection method and returns the root along with detailed iteration data.
+If no Jacobian is provided, it is calculated during initialization.
 
----
+The created object has **.pt** and **.ptVal** properties, representing the current estimate of the zero's position, and the value of the residual, respectively.
 
-#### **Inputs and Outputs**
-
-#### **Inputs**
-1. **`fcn`**: A Python callable (function) that represents $f(x)$.
-2. **`a`**: The lower bound of the interval.
-3. **`b`**: The upper bound of the interval. Must satisfy $f(a) \times f(b) < 0$ (i.e., the root lies between $a$ and $b$.
-4. **`tol_input`**: (Optional) The tolerance for the interval size. Default is $10^{-9}$.
-5. **`tol_output`**: (Optional) The tolerance for the function output. Default is $10^{-30}$.
-6. **`max_num_iter`**: (Optional) The maximum number of iterations to perform. Default is $1000$.
-
-#### **Outputs**
-The function returns a dictionary with the following keys:
-- **`solution`**: The computed root.
-- **`num_iter`**: The number of iterations performed.
-- **`all_a`**: A list of all the intermediate $a$ values.
-- **`all_fcn_a`**: A list of function values corresponding to $a$.
-- **`all_b`**: A list of all the intermediate $b$ values.
-- **`all_fcn_b`**: A list of function values corresponding to $b$.
+Iterating over the initialized object until finished results in a final object which either converged, with the **.pt** attribute giving the position of the root, or failed to converge, in which case the number of iterations given by the property **.num_iter** will equal the property **.max_iter**.
 
 ---
 
 ### **Summary of Errors and Their Causes**
 
-The `run_bisection_method` function includes several checks to ensure valid input and proper conditions for the bisection method. 
-
-| **Error Message**                                                                 | **Cause**                                                                                  | **Solution**                                                                                  |
-|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| `Invalid input: {a} is greater than {b}.`                                         | $a \geq b$, invalid interval.                                                         | Ensure $a < b$.                                                                           |
-| `a and b are not guaranteed to contain a root of the continuous function provided` | $f(a)$ and $f(b)$ have the same sign, root not guaranteed in the interval.        | Choose bounds where $f(a) \times f(b) < 0$.                                               |
-| `Maximum number of iterations ({max_iter}) reached without convergence`           | Root not found within the specified maximum number of iterations.                         | Increase the `max_num_iter` parameter or check the function for potential issues.             |
-| `The function evaluations must have one positive and one negative value.`         | The function is discontinuous, or bounds do not guarantee a root.                        | Ensure the function is continuous and the root lies between $a$ and $b$.              |
-
-By handling these errors carefully, you can debug and ensure proper usage of the bisection method for finding roots in a wide variety of scenarios.
+To be written
 
 ---
 
 #### **Examples**
 
-After following the installation instructions above, it will be possible to run the tutorial examples contained in the `tutorials` folder.
+    x, y, z = sp.symbols('x y z')
+    fun_expr = sp.Matrix([1 + x + y, x**2 - y**3 + z, x*y - z])
+    fun_vars = [x, y, z]
+    start_pt = np.array([1,1,1])
+    newton = NewtonMethod(fun_expr, fun_vars, start_pt)
+    subNewton = None
+    for subNewton in newton:
+        pass
+    if not subNewton is None: 
+        print("x=", subNewton.pt, ";", "# of iterations=", subNewton.num_iter)
 
 ---
 
 ### More information <a name="more"></a>
 More information can be found here:
-* https://en.wikipedia.org/wiki/Bisection_method
-* https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.bisect.html
-* https://en.wikipedia.org/wiki/Root-finding_algorithm
+* https://en.wikipedia.org/wiki/Newton%27s_method
