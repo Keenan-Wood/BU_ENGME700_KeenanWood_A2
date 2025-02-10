@@ -1,8 +1,12 @@
 ## Introductory Numerical Methods {.tabset .tabset-fade .tabset-pills}
 
-### Bisection Method {.tabset}
+<details>
+    <summary>Bisection Method</summary>
+    
+</details>
 
-### Newton's Method {.tabset}
+<details>
+    <summary>Newton's Method</summary>
 
 # Newton Method Implementation
 
@@ -116,3 +120,5 @@ To be written
 ### More information <a name="more"></a>
 More information can be found here:
 * https://en.wikipedia.org/wiki/Newton%27s_method
+
+</details>
