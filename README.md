@@ -1,12 +1,16 @@
 # Introductory Numerical Methods
 
 <details>
-    <summary>#1. Bisection Method</summary>
+    <summary>1. Bisection Method</summary>
+    
+# Bisection Method Implementation
 
 </details>
 
 <details>
-    <summary>#2. Newton's Method</summary>
+    <summary>2. Newton's Method</summary>
+
+# Newton's Method Implementation
 
 [![python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
 ![os](https://img.shields.io/badge/os-ubuntu%20|%20macos%20|%20windows-blue.svg)
