@@ -2,10 +2,12 @@ LICENSE
 README.md
 pyproject.toml
 src/__init__.py
-src/zerosetnewton.py
+src/newtonmethod.py
+src/parametricfunction.py
 src/NewtonMethod.egg-info/PKG-INFO
 src/NewtonMethod.egg-info/SOURCES.txt
 src/NewtonMethod.egg-info/dependency_links.txt
 src/NewtonMethod.egg-info/requires.txt
 src/NewtonMethod.egg-info/top_level.txt
 tests/test_parametricfunction.py
+tests/test_zerosetnewton.py
