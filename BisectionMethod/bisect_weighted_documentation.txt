@@ -1,0 +1,148 @@
+bisect_weighted
+Keenan Wood - 1/29/2025
+
+- Calculates the zero of a continous function defined on an interval
+  where the signs of the function evaluated at the endpoints are different
+
+
+- Instead of the standard bisection method, it chooses a point of partition
+  positioned at the zero of the linear approximation to the function given the endpoints
+  ie. for endpoints (a,b) and function f, the equation 0 = (f(b)-f(a))/(b-a) * (x_point - a) + f(a) holds,
+      where x_point is the next point of partition
+
+
+- Defines a bisection interval class "BisInterval" with properties:
+xDomain | Bounds of interval in form np.array([start, end])
+f       | Scalar function to evaluate
+TOL     | Solver tolerance (maximum acceptable difference from zero)
+nIteMax | Maximum allowed number of iterations
+xBuffer | For the weighted partition point - prevents positioning near boundary
+          - ie. xBuffer = .1 forces partition point to lie within +/- 40% of interval center
+pt      | Computed partition point
+ptVal   | Function evaluated at partition point
+nIte    | Number of iterations used
+(all of which are validated, and most of which have default values - see "__init__" below)
+
+ ... and methods:
+
+__init__(self, xDomain: np.ndarray, f, TOL: float = 10**-12, nIteMax: int = 10**3, xBuffer: float = .02)
+calcMidpoint(self) | Compute next partition point, as detailed above
+__iter__(self)     | Returns self
+__next__(self)     | Returns the next bisection subinterval using the partition point
+
+
+- Tutorial / Examples:
+  (See examples.py in src folder)
+
+1. Simple cubic
+    # Define the function to evaluate and the interval bounds
+    f = lambda x: (x-.101)**3
+    xBounds = np.array([-.1,1])
+
+    # Create an instance of the "BisInterval" class given the bounds and function
+    bisectInterval = BisInterval(xBounds, f)
+
+    # Iterate through class instance until converged
+    subInterval = None
+    for subInterval in bisectInterval:
+        pass
+
+    # If found, print calculated position of zero and number of iterations used
+    if not subInterval is None: 
+        print("x=", subInterval.ptVal, ";", "nIte=", subInterval.nIte)
+
+    > result: x= 0.10093734947751172 ; nIte= 12
+
+2. Spring example from lecture 1 (1/22/2025), with specified solver parameters
+    # Define the function to evaluate and the interval bounds
+    k = 1
+    L = 1
+    F = 0.25
+    f = lambda x: 2*k*x*(np.sqrt(L**2 + x**2) - L)/np.sqrt(L**2 + x**2) - F
+    xBounds = np.array([0,2])
+
+    # Create an instance of the "BisInterval" class given the bounds and function
+    # using non-default solver parameters
+    bisectInterval = BisInterval(xBounds, f, 10**-9, 100, .01)
+
+    # Iterate through class instance until converged
+    subInterval = None
+    for subInterval in bisectInterval:
+        pass
+
+    # If found, print calculated position of zero and number of iterations used
+    if not subInterval is None: 
+        print("x=", subInterval.ptVal, ";", "nIte=", subInterval.nIte)
+    
+    > result: x= 0.69657424183888 ; nIte= 11
+
+3. Pendulum and spring
+    # Consider a pendulum with length L and point mass M
+    # Attach a spring (constant k, rest length R) to the point mass and to a fixed point (a,b)
+    # For pendulum angle "t" at equilibrium:
+    # cA = ((a-L*np.sin(t))*L*np.sin(t) + (b-L*np.cos(t))*L*np.cos(t)) / (np.sqrt((a-L*np.sin(t))**2 + (b-L*np.cos(t))**2) * L)
+    # F_tangent = 0 = M*g*np.sin(t) + k*(np.sqrt( (a-L*np.sin(t))**2 +  (b-L*np.cos(t))**2 ) - R) * (1-cA**2)
+
+    # Define the function to evaluate and the interval bounds
+    L = 1.0
+    M = 1.0
+    a = 1.5
+    b = 1.5
+    R = 1.0
+    k = 10
+    g = 9.8
+    cA = lambda t: ((a-L*np.sin(t))*L*np.sin(t) + (b-L*np.cos(t))*L*np.cos(t)) / (np.sqrt((a-L*np.sin(t))**2 + (b-L*np.cos(t))**2) * L)
+    f = lambda t: -M*g*np.sin(t) + k*(np.sqrt( (a-L*np.sin(t))**2 +  (b-L*np.cos(t))**2 ) - R) * (1-cA(t)**2)
+    xBounds = np.array([0,1.6])
+
+    # Create an instance of the "BisInterval" class given the bounds and function
+    bisectInterval = BisInterval(xBounds, f)
+
+    # Iterate through class instance until converged
+    subInterval = None
+    for subInterval in bisectInterval:
+        pass
+
+    # If found, print calculated position of zero and number of iterations used
+    if not subInterval is None: 
+        print("x=", subInterval.ptVal, ";", "nIte=", subInterval.nIte)
+
+    > result: x= 0.24270607193323857 ; nIte= 12
+
+4. Transcendental equation
+    # Define the function to evaluate and the interval bounds
+    f = lambda x: np.cos(x) - x
+    xBounds = np.array([0,2])
+
+    # Create an instance of the "BisInterval" class given the bounds and function
+    bisectInterval = BisInterval(xBounds, f)
+
+    # Iterate through class instance until converged
+    subInterval = None
+    for subInterval in bisectInterval:
+        pass
+
+    # If found, print calculated position of zero and number of iterations used
+    if not subInterval is None: 
+        print("x=", subInterval.ptVal, ";", "nIte=", subInterval.nIte)
+
+    > result: x= 0.7390851332151607 ; nIte= 10
+
+5. Trig function - many roots
+    # Define the function to evaluate and the interval bounds
+    f = lambda x: np.sin(x)
+    xBounds = np.array([-.1,6.4])
+
+    # Create an instance of the "BisInterval" class given the bounds and function
+    bisectInterval = BisInterval(xBounds, f)
+
+    # Iterate through class instance until converged
+    subInterval = None
+    for subInterval in bisectInterval:
+        pass
+
+    # If found, print calculated position of zero and number of iterations used
+    if not subInterval is None: 
+        print("x=", subInterval.ptVal, ";", "nIte=", subInterval.nIte)
+
+    > result: x= 6.586878869489603e-14 ; nIte= 6
