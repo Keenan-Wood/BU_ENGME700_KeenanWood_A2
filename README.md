@@ -1,14 +1,14 @@
-## Introductory Numerical Methods {.tabset .tabset-fade .tabset-pills}
+### Introductory Numerical Methods
 
 <details>
-    <summary>Bisection Method</summary>
+    <summary>1. Bisection Method</summary>
     
 # Bisection Method Implementation
-# test change
+
 </details>
 
 <details>
-    <summary>Newton's Method</summary>
+    <summary>2. Newton's Method</summary>
 
 # Newton Method Implementation
 
