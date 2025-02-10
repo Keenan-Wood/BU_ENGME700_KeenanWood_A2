@@ -103,9 +103,7 @@ To be written
         print("x=", subNewton.pt, ";", "# of iterations=", subNewton.num_iter)
 
    Output:
-   '''bash
    x= [-2.32471796  1.32471796 -3.07959562] ; # of iterations= 12
-   '''
 
 ---
 
