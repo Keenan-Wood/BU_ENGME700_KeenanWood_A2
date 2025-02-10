@@ -46,8 +46,6 @@ To be written
 To install this package, please begin by setting up a conda environment and activating it. For example:
 ```bash
 conda create --name newton-method-env python=3.12
-'''
-'''bash
 conda activate newton-method-env
 ```
 
@@ -103,6 +101,11 @@ To be written
         pass
     if not subNewton is None: 
         print("x=", subNewton.pt, ";", "# of iterations=", subNewton.num_iter)
+
+   Output:
+   '''bash
+   x= [-2.32471796  1.32471796 -3.07959562] ; # of iterations= 12
+   '''
 
 ---
 
