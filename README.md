@@ -26,83 +26,43 @@ To be written
 
 ### Newton Method Algorithm <a name="algo"></a>
 
-**Newton's Method** is a numerical technique to find roots of a continuous function f(x) whose jacobian is continuous. Given an initial point **x_0** and its resultant **$R(x_0) = f(x_0)$**, Newton's method generates a more accurate estimate of the zero of f, **$x_1 = x_0 - J(x_0)^{-1} R(x_0)$**
+**Newton's Method** is a numerical technique to find roots of a continuous function f(x) whose jacobian **$J$** is continuous. Given an initial point **$x_0$** and its resultant **$R(x_0) = f(x_0)$**, Newton's method generates a more accurate estimate of the zero of f, **$x_1 = x_0 - J(x_0)^{-1} R(x_0)$**. Iteration produces a sequence of positions which for most well-behaved functions converges quadtratically to a root of f.
 
-1. **Choose an interval $[a, b]$**:
-   - choose $[a, b]$ such that $f(a) \cdot f(b) < 0$, which means the function has a root in the interval.
-2. **Compute the midpoint**:
-   - $c = \frac{a + b}{2}$
-3. **Check the sign of $f(c)$**:
-   - If $f(c) = 0$, then $c$ is the root.
-   - If $f(a) \cdot f(c) < 0$, the root lies in $[a, c]$. Update $b = c$.
-   - Otherwise, the root lies in $[c, b]$. Update $a = c$.
-4. **Repeat** until the interval size $|b - a|$ is smaller than the desired tolerance or $f(c)$ is smaller than the desired tolerance.
+**Advantages of Newton's Method**:
+1. **Fast**: The method in most cases converges quadtratically.
+2. **Efficient Evaluation**: Higher-order derivatives of f, which may be expensive to evaluate, do not need to be evaluated.
+3. **Robustness**: It works well for a wide range of functions.
 
-**Advantages of the Bisection Method**:
-1. **Simplicity**: The method is easy to understand and implement.
-2. **Guaranteed Convergence**: If the function $f(x)$ is continuous and $f(a) \cdot f(b) < 0$, the method is guaranteed to converge to a root.
-3. **Robustness**: It works well for a wide range of functions without requiring derivatives or complex calculations.
-4. **Predictable Behavior**: The error decreases by approximately half in each iteration, providing predictable convergence.
-
-**Limitations of the Bisection Method**:
-1. **Slow Convergence**: Compared to other methods like Newton-Raphson or secant, the bisection method can converge more slowly.
-2. **Requires Bracketing**: The method requires an interval $[a, b]$ where $f(a) \cdot f(b) < 0$, which may not always be easy to identify.
-3. **Limited Precision**: The method converges linearly, which may not be efficient for high-precision requirements.
-4. **Not Suitable for Multiple Roots**: The method may fail or behave inconsistently if the function has multiple roots within the interval.
-5. **Function Continuity Required**: It assumes $f(x)$ is continuous in $[a, b]$, and any discontinuities can cause issues.
+**Limitations of Newton's Method**:
+1. **Non-convergence**: Certain combinations of functions and initial points can diverge or oscillate ad infinitum.
+2. **Identifies single root**: If convergent, only one root of the function is identified; In particular, if f takes an N-dimensional input and outputs a P-dimensional vector, the zero set of f typically has dimension N-P.
+3. **Function Continuity and Differentiability Required**: f and its jacobian must be continuous.
+4. **Unbounded domain**: In its simplest implementation, Newton's method does not utilize information on domain bounds to improve convergence.
 
 ---
 
 ### Conda environment, install, and testing <a name="install"></a>
 
-To install this package, please begin by setting up a conda environment (mamba also works):
+To install this package, please begin by setting up a conda environment and activating it. For example:
 ```bash
-conda create --name bisection-method-env python=3.12
+conda create --name newton-method-env python=3.12
+'''
+'''bash
+conda activate newton-method-env
 ```
-Once the environment has been created, activate it:
 
-```bash
-conda activate bisection-method-env
-```
-Double check that python is version 3.12 in the environment:
-```bash
-python --version
-```
-Ensure that pip is using the most up to date version of setuptools:
-```bash
-pip install --upgrade pip setuptools wheel
-```
-Create an editable install of the bisection method code (note: you must be in the correct directory):
+Navigate to the project directory and create an editable install of the code:
 ```bash
 pip install -e .
 ```
+
 Test that the code is working with pytest:
 ```bash
-pytest -v --cov=bisectionmethod --cov-report term-missing
+pytest -v --cov=newtonmethod --cov-report term-missing
 ```
-Code coverage should be 100%. Now you are prepared to write your own code based on this method and/or run the tutorial. 
 
-If you would like, you can also open python and check to make sure that the import works properly:
-```bash
-(bisection-method-env) $ python
-Python 3.12.8 | packaged by Anaconda, Inc. | (main, Dec 11 2024, 11:37:13) [Clang 14.0.6 ] on darwin
-Type "help", "copyright", "credits" or "license" for more information.
->>> from bisectionmethod import bisection_method as bim
->>> bim.hello_world()
-'hello world'
-```
-If you are using VSCode to run this code, don't forget to set VSCode virtual environment to bisection-method-env.
+If you are using VSCode to run this code, don't forget to set VSCode virtual environment to the newly-activated environment.
 
-If you would like the open `tutorial.ipynb` located in the `tutorials` folder as a Jupyter notebook in the browser, you might need to install Jupyter notebook in your conda environment as well:
-```bash
-pip install jupyter
-```
-```bash
-cd tutorials/
-```
-```bash
-jupyter notebook tutorial.ipynb
-```
 ---
 
 ### Tutorial <a name="tutorial"></a>
