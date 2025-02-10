@@ -3,6 +3,8 @@
 <details>
     <summary>Bisection Method</summary>
     
+# Bisection Method Implementation
+
 </details>
 
 <details>
