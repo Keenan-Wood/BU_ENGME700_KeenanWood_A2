@@ -7,11 +7,11 @@ class material:
     H: float
     Y_0: float
 
-    def __init__(self, name: str, E: float, H: float, stress_yield: float):
+    def __init__(self, name: str, E: float, H: float, yield_stress: float):
         self.name = name
         self.E = E
         self.H = H
-        self.stress_yield = stress_yield
+        self.yield_stress = yield_stress
 
 @dataclass
 class ElastoPlastic:
@@ -20,7 +20,7 @@ class ElastoPlastic:
 
     def __init__(self, mat: material, strain: float, stress: float, back_stress: float = 0):
         self.mat = mat
-        self.stress_yield = self.mat.stress_yield
+        self.yield_stress = self.mat.yield_stress
         self.strain = strain
         self.stress = stress
         self.back_stress = back_stress
@@ -43,14 +43,17 @@ class ElastoPlastic:
         
         for strain_incr in set_strain:
             # Update stress and strain (Predictor-Corrector in 1 step)
-            self.stress_yield = self.stress_yield + hard_iso*self.mat.H*self.strain
-            stress_elastic = self.stress + self.mat.E*strain_incr - self.back_stress
-
-            phi = min(0, abs(stress_elastic) - stress_yield)
-            strain_plastic = phi / (self.mat.E + self.mat.H)
-            self.stress = stress_elastic - np.sign(stress_elastic)*self.mat.E*strain_plastic
-            self.back_stress = self.back_stress + hard_kin*np.sign(stress_elastic)*self.mat.H*strain_plastic
+            self.yield_stress = self.yield_stress + hard_iso*self.mat.H*self.strain
             self.strain = self.strain + strain_incr
+
+            elastic_stress = self.stress + self.mat.E*strain_incr - self.back_stress
+            phi = min(0, abs(elastic_stress) - self.yield_stress)
+            plastic_strain = phi / (self.mat.E + self.mat.H)
+            directed_strain = plastic_strain * np.sign(elastic_stress)
+            self.stress = elastic_stress - self.mat.E * directed_strain
+            self.back_stress = self.back_stress + hard_kin * self.mat.H * directed_strain
+
+            ## Compare with lecture notes - confusing update steps
         
 
 
