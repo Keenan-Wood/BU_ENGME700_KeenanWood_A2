@@ -1,4 +1,4 @@
-### Introductory Numerical Methods
+# Introductory Numerical Methods
 
 <details>
     <summary>1. Bisection Method</summary>
