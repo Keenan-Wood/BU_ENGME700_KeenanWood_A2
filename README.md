@@ -26,8 +26,7 @@ To be written
 
 ### Newton Method Algorithm <a name="algo"></a>
 
-<!---
-The **Bisection Method** is a numerical technique to find roots of a continuous function f(x). The method works by repeatedly dividing an interval [a, b] in half and selecting the subinterval in which the root lies. The algorithm for the Bisection Method is as follows:
+**Newton's Method** is a numerical technique to find roots of a continuous function f(x) whose jacobian is continuous. Given an initial point **x_0** and its resultant **$R(x_0) = f(x_0)$**, Newton's method generates a more accurate estimate of the zero of f, **$x_1 = x_0 - J(x_0)^{-1} R(x_0)$**
 
 1. **Choose an interval $[a, b]$**:
    - choose $[a, b]$ such that $f(a) \cdot f(b) < 0$, which means the function has a root in the interval.
@@ -51,7 +50,6 @@ The **Bisection Method** is a numerical technique to find roots of a continuous 
 3. **Limited Precision**: The method converges linearly, which may not be efficient for high-precision requirements.
 4. **Not Suitable for Multiple Roots**: The method may fail or behave inconsistently if the function has multiple roots within the interval.
 5. **Function Continuity Required**: It assumes $f(x)$ is continuous in $[a, b]$, and any discontinuities can cause issues.
--->
 
 ---
 
