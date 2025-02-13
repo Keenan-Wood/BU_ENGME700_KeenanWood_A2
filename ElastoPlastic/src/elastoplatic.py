@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class material:
     E: float
     H: float
-    Y_0: float
+    yield_stress: float
 
     def __init__(self, name: str, E: float, H: float, yield_stress: float):
         self.name = name
