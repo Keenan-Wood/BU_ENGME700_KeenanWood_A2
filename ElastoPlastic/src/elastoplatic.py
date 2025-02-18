@@ -15,8 +15,6 @@ class material:
 
 @dataclass
 class ElastoPlastic:
-    tol: float
-    max_iter: int
 
     def __init__(self, mat: material, strain: float, stress: float, back_stress: float = 0):
         self.mat = mat

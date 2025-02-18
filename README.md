@@ -1,5 +1,14 @@
 # Introductory Numerical Methods
 
+[![python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
+![os](https://img.shields.io/badge/os-ubuntu%20|%20macos%20|%20windows-blue.svg)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/sandialabs/sibl#license)
+
+[![codecov](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod/graph/badge.svg?token=p5DMvJ6byO)](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod)
+[![tests](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod/actions/workflows/tests.yml/badge.svg)](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod/actions)
+
+---
+
 <details>
     <summary>1. Bisection Method</summary>
     
@@ -11,15 +20,6 @@
     <summary>2. Newton's Method</summary>
 
 # Newton's Method Implementation
-
-[![python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
-![os](https://img.shields.io/badge/os-ubuntu%20|%20macos%20|%20windows-blue.svg)
-[![license](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/sandialabs/sibl#license)
-
-[![codecov](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod/graph/badge.svg?token=p5DMvJ6byO)](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod)
-[![tests](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod/actions/workflows/tests.yml/badge.svg)](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1_NewtonMethod/actions)
-
----
 
 ### Table of Contents
 * [Getting Started](#gs)
@@ -122,5 +122,107 @@ To be written
 ### More information <a name="more"></a>
 More information can be found here:
 * https://en.wikipedia.org/wiki/Newton%27s_method
+
+</details>
+
+<details>
+    <summary>3. Elasto-Plastic Strain Hardening Simulation</summary>
+
+# Elasto-Plastic Strain Hardening Simulation
+
+### Table of Contents
+* [Getting Started](#gs)
+* [Elasto-Plastic Strain Hardening with Predictor-Corrector](#algo)
+* [Conda environment, installation, and testing](#install)
+* [Tutorial](#tutorial)
+* [More Information](#more)
+
+---
+
+### Getting Started
+
+To be written
+
+---
+
+### Elasto-Plastic Strain Hardening with Predictor-Corrector <a name="algo"></a>
+
+**Newton's Method** is a numerical technique to find roots of a continuous function f(x) whose jacobian **$J$** is continuous. Given an initial point **$x_0$** and its resultant **$R(x_0) = f(x_0)$**, Newton's method generates a more accurate estimate of the zero of f, **$x_1 = x_0 - J(x_0)^{-1} R(x_0)$**. Iteration produces a sequence of positions which for most well-behaved functions converges quadtratically to a root of f.
+
+**Advantages of Newton's Method**:
+1. **Fast**: The method in most cases converges quadtratically.
+2. **Efficient Evaluation**: Higher-order derivatives of f, which may be expensive to evaluate, do not need to be evaluated.
+3. **Robustness**: It works well for a wide range of functions.
+
+**Limitations of Newton's Method**:
+1. **Non-convergence**: Certain combinations of functions and initial points can diverge or oscillate ad infinitum.
+2. **Identifies single root**: If convergent, only one root of the function is identified; In particular, if f takes an N-dimensional input and outputs a P-dimensional vector, the zero set of f typically has dimension N-P.
+3. **Function Continuity and Differentiability Required**: f and its jacobian must be continuous.
+4. **Unbounded domain**: In its simplest implementation, Newton's method does not utilize information on domain bounds to improve convergence.
+
+---
+
+### Conda environment, install, and testing <a name="install"></a>
+
+To install this package, please begin by setting up a conda environment and activating it. For example:
+```bash
+conda create --name elastoplastic-env python=3.12
+conda activate elastoplastic-env
+```
+
+Navigate to the project directory and create an editable install of the code:
+```bash
+pip install -e .
+```
+
+Test that the code is working with pytest:
+```bash
+pytest -v --cov=elastoplastic --cov-report term-missing
+```
+
+If you are using VSCode to run this code, don't forget to set VSCode virtual environment to the newly-activated environment.
+
+---
+
+### Tutorial <a name="tutorial"></a>
+
+#### **What Does the Function Do?**
+
+The `Material` class instantiates with:
+- A name, as a string
+- The elastic modulus, as a float
+- The plastic modulus, as a float
+- The yield strength, as a float
+
+*Note*: Units are not currently supported - convert all values to consistent units for accurate results.
+
+The `ElastoPlastic` class instantiates with:
+- A material (defined above)
+- The current strain, as a float
+- The current stress, as a float
+- The current back stress, as a float
+
+Once instantiated, an ElastoPlastic object can be acted upon with the **stretch()** function, with arguments:
+- The strain increments to apply, as a numpy array
+- A scaling parameter relating to the isotropic hardening (0 for none, 1 for full)
+- A scaling parameter relating to the kinematic hardening (0 for none, 1 for full)
+
+---
+
+### **Summary of Errors and Their Causes**
+
+To be written
+
+---
+
+#### **Examples**
+
+
+
+---
+
+### More information <a name="more"></a>
+More information can be found here:
+* https://innovationspace.ansys.com/courses/wp-content/uploads/sites/5/2020/12/Lesson-3-Hardening-of-Plasticity.pdf
 
 </details>
