@@ -148,7 +148,9 @@ The module presented here establishes a *material* and an *ElastoPlastic* class.
 
 Instead of checking if the difference of the stress and the yield stress is negative to see if the material is in the elastic regime, the *stretch()* method takes the *min()* of 0 and the difference, so that no branching is necessary (ie. the value being 0 instead of negative naturally calculates elastic behavior).
 
-# To-Do
+---
+
+### To-Do
 - Debug pytest's file-finding/system path issue (see errors section)
 - Add matplotlib functionallity for easy data visualization
 - Verify the results with commercial solvers
@@ -211,31 +213,31 @@ Known issue: pytest does not recognize elastoplastic module (likely system path/
 
 #### **Examples**
 
-# Steel - Isotropic Hardening
+##### Steel - Isotropic Hardening
     steel = material('steel', 210, 2.10, 0.250)
     isotropic_steel = ElastoPlastic(steel, 0, 0)
     set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
     isotropic_steel.stretch(set_strain, 1, 0)
 
-# Aluminum - Kinematic Hardening
+##### Aluminum - Kinematic Hardening
     alum = material('aluminum', 70, 0.07, 0.095)
     kinematic_alum = ElastoPlastic(alum, 0, 0)
     set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
     kinematic_alum.stretch(set_strain, 1, 0)
 
-# Copper - Isotropic and Kinematic Hardening
+##### Copper - Isotropic and Kinematic Hardening
     copper = material('copper', 117, 1.17, 0.070)
     elastoplastic_copper = ElastoPlastic(steel, 0, 0)
     set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
     elastoplastic_copper.stretch(set_strain, 1, 1)
 
-# Pre-strained Nylon - Isotropic Hardening
+##### Pre-strained Nylon - Isotropic Hardening
     nylon = material('nylon6', 3, 0.003, 0.045)
     isotropic_nylon = ElastoPlastic(nylon, .3, 0)
     set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
     isotropic_nylon.stretch(set_strain, 1, 0)
 
-# Silicon-Carbide - Kinematic Hardening with Back Stress
+##### Silicon-Carbide - Kinematic Hardening with Back Stress
     silicon_carbide = material('silicon_carbide', 450, 4.50, 3.440)
     kinematic_carbide = ElastoPlastic(silicon_carbide, .3, 100)
     set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
