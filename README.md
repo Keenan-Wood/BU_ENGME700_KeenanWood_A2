@@ -218,6 +218,39 @@ To be written
 #### **Examples**
 
 
+alum = material('aluminum', 70, 0.07, 0.095)
+silicon_carbide = material('silicon_carbide', 450, 4.50, 3.440)
+copper = material('copper', 117, 1.17, 0.070)
+
+# Steel - Isotropic Hardening
+    steel = material('steel', 210, 2.10, 0.250)
+    isotropic_steel = ElastoPlastic(steel, 0, 0)
+    set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
+    isotropic_steel.stretch(set_strain, 1, 0)
+
+# Aluminum - Kinematic Hardening
+    alum = material('aluminum', 70, 0.07, 0.095)
+    kinematic_alum = ElastoPlastic(alum, 0, 0)
+    set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
+    kinematic_alum.stretch(set_strain, 1, 0)
+
+# Copper - Isotropic and Kinematic Hardening
+    copper = material('copper', 117, 1.17, 0.070)
+    elastoplastic_copper = ElastoPlastic(steel, 0, 0)
+    set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
+    elastoplastic_copper.stretch(set_strain, 1, 1)
+
+# Pre-strained Nylon - Isotropic Hardening
+    nylon = material('nylon6', 3, 0.003, 0.045)
+    isotropic_nylon = ElastoPlastic(nylon, .3, 0)
+    set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
+    isotropic_nylon.stretch(set_strain, 1, 0)
+
+# Silicon-Carbide - Kinematic Hardening with Back Stress
+    silicon_carbide = material('silicon_carbide', 450, 4.50, 3.440)
+    kinematic_carbide = ElastoPlastic(silicon_carbide, .3, 100)
+    set_strain = np.array([.01, .01, .01, -.03, .05, -.08, .1, -.7])
+    kinematic_carbide.stretch(set_strain, 0, 1)
 
 ---
 
