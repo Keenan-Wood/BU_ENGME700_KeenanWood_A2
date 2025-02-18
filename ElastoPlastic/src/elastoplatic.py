@@ -45,16 +45,16 @@ class ElastoPlastic:
             self.strain = self.strain + strain_incr
 
             # Update stress, back stress, and yield surface (Predictor-Corrector in 1 step using min())
-            elastic_stress = self.stress + self.mat.E*strain_incr - self.back_stress
-            phi = min(0, abs(elastic_stress) - self.yield_stress)
+            elastic_stress = self.stress + self.mat.E*strain_incr
+            phi = min(0, abs(elastic_stress - self.back_stress) - self.yield_stress)
             plastic_strain = phi / (self.mat.E + self.mat.H)
-            directed_strain = plastic_strain * np.sign(elastic_stress)
-            self.stress = elastic_stress - self.mat.E * directed_strain
+            signed_strain = plastic_strain * np.sign(elastic_stress - self.back_stress)
+            self.stress = elastic_stress - self.mat.E * signed_strain
 
             # Isotropic Part - Von-Mises Yield Criterion -> d(yield_stress) = 3/2 * h * d(plastic_strain)
             self.yield_stress = self.yield_stress + hard_iso * self.mat.H * plastic_strain
             # Kinematic Part - Prager's Rule -> d(back_stress) = c * d(plastic_strain)
-            self.back_stress = self.back_stress + hard_kin * self.mat.H * directed_strain
+            self.back_stress = self.back_stress + hard_kin * self.mat.H * signed_strain
 
             ## Compare with lecture notes - confusing update steps
         

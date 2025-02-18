@@ -1,0 +1,18 @@
+Metadata-Version: 2.2
+Name: ElastoPlastic
+Version: 0.0.0
+Summary: ElastoPlastic - Predictor-Corrector Implementation
+Author-email: Keenan Wood <keenanw7@bu.edu>
+Project-URL: Homepage, https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1
+Project-URL: Bug Tracker, https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: matplotlib==3.10.0
+Requires-Dist: numpy==1.26.4
+Requires-Dist: sympy
+Requires-Dist: pytest==7.1.2
+Requires-Dist: pytest-cov==3.0.0
+Requires-Dist: scipy==1.12.0
