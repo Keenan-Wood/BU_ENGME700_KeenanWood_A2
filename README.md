@@ -131,7 +131,6 @@ More information can be found here:
 # Elasto-Plastic Strain Hardening Simulation
 
 ### Table of Contents
-* [Getting Started](#gs)
 * [Elasto-Plastic Strain Hardening with Predictor-Corrector](#algo)
 * [Conda environment, installation, and testing](#install)
 * [Tutorial](#tutorial)
@@ -139,26 +138,21 @@ More information can be found here:
 
 ---
 
-### Getting Started
-
-To be written
-
----
-
 ### Elasto-Plastic Strain Hardening with Predictor-Corrector <a name="algo"></a>
 
-**Newton's Method** is a numerical technique to find roots of a continuous function f(x) whose jacobian **$J$** is continuous. Given an initial point **$x_0$** and its resultant **$R(x_0) = f(x_0)$**, Newton's method generates a more accurate estimate of the zero of f, **$x_1 = x_0 - J(x_0)^{-1} R(x_0)$**. Iteration produces a sequence of positions which for most well-behaved functions converges quadtratically to a root of f.
+The **Predictor-Corrector** approach consists in using data to approximate a solution, and then using that same data to add a correcting term to the approximation to get a much better approximation. Its primary benefit is to reduce the memory and computation needed for large problems that would otherwise require the calculation of two potentially large and computationally-intensive sets of data to calculate a good approximation, instead of the one.
 
-**Advantages of Newton's Method**:
-1. **Fast**: The method in most cases converges quadtratically.
-2. **Efficient Evaluation**: Higher-order derivatives of f, which may be expensive to evaluate, do not need to be evaluated.
-3. **Robustness**: It works well for a wide range of functions.
+The elasto-plastic model considers materials to be elastic until they reach their yield stress, at which point plastic flow starts occuring. In conjuction with the isotropic hardening model, the material's yield surface expands under plastic loading, while in the kinematic hardening model, the yield surface remains the same size, but its center, defined by a *back-stress*, shifts in the direction of the applied load.
 
-**Limitations of Newton's Method**:
-1. **Non-convergence**: Certain combinations of functions and initial points can diverge or oscillate ad infinitum.
-2. **Identifies single root**: If convergent, only one root of the function is identified; In particular, if f takes an N-dimensional input and outputs a P-dimensional vector, the zero set of f typically has dimension N-P.
-3. **Function Continuity and Differentiability Required**: f and its jacobian must be continuous.
-4. **Unbounded domain**: In its simplest implementation, Newton's method does not utilize information on domain bounds to improve convergence.
+The module presented here establishes a *material* and an *ElastoPlastic* class. The *material* class holds the basic material properties (the elastic and plastic moduli, and the yield strength before loading), and the ElastoPlastic class generates an object on which a *stretch()* method can be calculate its stress and strain after applying a series of strain increments. Two parameters to the stretch function determine the hardening behavior - if either is set to 0 and the other to 1, then the material will harden either fully isotropically or kinematically. The values can be adjusted to calculate the results of mixed hardening.
+
+Instead of checking if the difference of the stress and the yield stress is negative to see if the material is in the elastic regime, the *stretch()* method takes the *min()* of 0 and the difference, so that no branching is necessary (ie. the value being 0 instead of negative naturally calculates elastic behavior).
+
+# To-Do
+- Debug pytest's file-finding/system path issue (see errors section)
+- Add matplotlib functionallity for easy data visualization
+- Verify the results with commercial solvers
+- Expand the tutorial examples with rich descriptions and examples of how small changes effect the results
 
 ---
 
@@ -170,7 +164,7 @@ conda create --name elastoplastic-env python=3.12
 conda activate elastoplastic-env
 ```
 
-Navigate to the project directory and create an editable install of the code:
+Navigate to the project directory (the *ElastoPlastic* folder) and create an editable install of the code:
 ```bash
 pip install -e .
 ```
@@ -186,7 +180,7 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
 
 ### Tutorial <a name="tutorial"></a>
 
-#### **What Does the Function Do?**
+#### **Class Structure**
 
 The `Material` class instantiates with:
 - A name, as a string
@@ -211,16 +205,11 @@ Once instantiated, an ElastoPlastic object can be acted upon with the **stretch(
 
 ### **Summary of Errors and Their Causes**
 
-To be written
+Known issue: pytest does not recognize elastoplastic module (likely system path/reference issue)
 
 ---
 
 #### **Examples**
-
-
-alum = material('aluminum', 70, 0.07, 0.095)
-silicon_carbide = material('silicon_carbide', 450, 4.50, 3.440)
-copper = material('copper', 117, 1.17, 0.070)
 
 # Steel - Isotropic Hardening
     steel = material('steel', 210, 2.10, 0.250)
