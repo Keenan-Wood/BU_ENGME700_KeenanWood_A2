@@ -61,7 +61,7 @@ conda create --name newton-method-env python=3.12
 conda activate newton-method-env
 ```
 
-Navigate to the project directory and create an editable install of the code:
+Navigate to the project directory (./NewtonMethod) and create an editable install of the code:
 ```bash
 pip install -e .
 ```
