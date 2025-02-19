@@ -29,13 +29,22 @@ jobs:
       - name: Install dependencies
         run: pip install -e .
 
-      - name: Install test dependencies
+      - name: Install NewtonMethod test dependencies
+        working-directory: ./NewtonMethod
         run: pip install pytest pytest-cov
 
-      - name: Run tests with coverage
+      - name: Run NewtonMethod tests with coverage
+        working-directory: ./NewtonMethod
         run: pytest --cov=newtonmethod --cov-report=xml
-        # Replace 'my_package' with your actual package name
 
+      - name: Install ElastoPlastic test dependencies
+        working-directory: ./ElastoPlastic
+        run: pip install pytest pytest-cov
+
+      - name: Run ElastoPlastic tests with coverage
+        working-directory: ./ElastoPlastic
+        run: pytest --cov=newtonmethod --cov-report=xml
+        
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
