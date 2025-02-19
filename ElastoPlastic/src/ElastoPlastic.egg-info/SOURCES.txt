@@ -1,4 +1,5 @@
 pyproject.toml
+src/__init__.py
 src/elastoplatic.py
 src/ElastoPlastic.egg-info/PKG-INFO
 src/ElastoPlastic.egg-info/SOURCES.txt
