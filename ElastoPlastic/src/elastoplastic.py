@@ -32,7 +32,7 @@ class ElastoPlastic:
 
     # The stretch() method deforms the object according to the provided strain increments
     # behavior in the plastic regime is determined by isotropic and kinematic hardening parameters
-    # An (isotropic, kinematic) parameter of (1,0) gives standard isotropic hardening behavior, and vice versa,
+    # An (isotropic, kinematic) parameter pair of (1,0) gives standard isotropic hardening behavior, and vice versa,
     # while intermediate values representing mixed hardening are permitted
     def stretch(self, set_strain: np.array, hard_iso: float, hard_kin: float):
         # Validate inputs
@@ -40,18 +40,21 @@ class ElastoPlastic:
         if hard_iso < 0 or hard_iso > 1: raise Exception("Isotropic hardening parameter must be between 0 (off) and 1 (on)")
         if hard_kin < 0 or hard_kin > 1: raise Exception("Kinematic hardening parameter must be between 0 (off) and 1 (on)")
         
+        # If set_strain has only one value, it needs to be made into a list to be iterable
         if set_strain.size == 1: set_strain = [set_strain]
+
         for strain_incr in set_strain:
             self.strain = self.strain + strain_incr
 
-            # Update stress, back stress, and yield surface (Predictor-Corrector in 1 step using max())
+            # Update stress, back stress, and yield surface (Predictor-Corrector without branching using max())
+            # The elastic_stress is the stress if the deformation from the strain increment is entirely elastic
             elastic_stress = self.stress + self.mat.E*strain_incr
             phi = max(0, abs(elastic_stress - self.back_stress) - self.yield_stress)
             plastic_strain = phi / (self.mat.E + self.mat.H)
             signed_strain = plastic_strain * np.sign(elastic_stress - self.back_stress)
             self.stress = elastic_stress - self.mat.E * signed_strain
 
-            # Isotropic update
+            # Isotropic Hardening - expand the yield surface
             self.yield_stress = self.yield_stress + hard_iso * self.mat.H * plastic_strain
-            # Kinematic update
+            # Kinematic update - shift the yield surface's center (the back stress)
             self.back_stress = self.back_stress + hard_kin * self.mat.H * signed_strain
