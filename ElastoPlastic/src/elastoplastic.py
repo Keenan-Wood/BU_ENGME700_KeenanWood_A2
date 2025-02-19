@@ -2,6 +2,9 @@ import numpy as np
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
+# A "material" class is useful to store basic material properties.
+# Properties: Elastic Modulus "E", Plastic Modulus "H", and un-deformed yield stress "yield_stress"
+# This eliminates the need for specifying these properties many times for multiple objects of the same material
 @dataclass
 class material:
     E: float
@@ -14,6 +17,9 @@ class material:
         self.H = H
         self.yield_stress = yield_stress
 
+# An "ElastoPlastic" class represents a deformable material, composed of the assigned "material".
+# Properties: material, current yield stress, current stress, current strain, and current back stress
+
 @dataclass
 class ElastoPlastic:
 
@@ -24,6 +30,10 @@ class ElastoPlastic:
         self.stress = stress
         self.back_stress = back_stress
 
+    # The stretch() method deforms the object according to the provided strain increments
+    # behavior in the plastic regime is determined by isotropic and kinematic hardening parameters
+    # An (isotropic, kinematic) parameter of (1,0) gives standard isotropic hardening behavior, and vice versa,
+    # while intermediate values representing mixed hardening are permitted
     def stretch(self, set_strain: np.array, hard_iso: float, hard_kin: float):
         # Validate inputs
         if set_strain.size < 1: raise Exception("Array of strain increments should have at least one element")
@@ -34,16 +44,14 @@ class ElastoPlastic:
         for strain_incr in set_strain:
             self.strain = self.strain + strain_incr
 
-            # Update stress, back stress, and yield surface (Predictor-Corrector in 1 step using min())
+            # Update stress, back stress, and yield surface (Predictor-Corrector in 1 step using max())
             elastic_stress = self.stress + self.mat.E*strain_incr
             phi = max(0, abs(elastic_stress - self.back_stress) - self.yield_stress)
             plastic_strain = phi / (self.mat.E + self.mat.H)
             signed_strain = plastic_strain * np.sign(elastic_stress - self.back_stress)
             self.stress = elastic_stress - self.mat.E * signed_strain
 
-            # Isotropic Part - Von-Mises Yield Criterion -> d(yield_stress) = 3/2 * h * d(plastic_strain)
+            # Isotropic update
             self.yield_stress = self.yield_stress + hard_iso * self.mat.H * plastic_strain
-            # Kinematic Part - Prager's Rule -> d(back_stress) = c * d(plastic_strain)
+            # Kinematic update
             self.back_stress = self.back_stress + hard_kin * self.mat.H * signed_strain
-
-            ## Compare with lecture notes - confusing update steps
