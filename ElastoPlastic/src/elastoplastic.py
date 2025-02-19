@@ -35,7 +35,7 @@ class ElastoPlastic:
 
     def stretch(self, set_strain: np.array, hard_iso: float, hard_kin: float):
         # Validate inputs
-        if len(set_strain) < 1: raise Exception("Array of strain increments should have at least one element")
+        if set_strain.size < 1: raise Exception("Array of strain increments should have at least one element")
         if hard_iso < 0 or hard_iso > 1: raise Exception("Isotropic hardening parameter must be between 0 (off) and 1 (on)")
         if hard_kin < 0 or hard_kin > 1: raise Exception("Kinematic hardening parameter must be between 0 (off) and 1 (on)")
         
