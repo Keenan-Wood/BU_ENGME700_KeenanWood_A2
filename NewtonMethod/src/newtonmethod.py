@@ -2,6 +2,10 @@ import numpy as np
 import sympy as sp
 from dataclasses import dataclass
 
+# Class of an iterable object "NewtonMethod" representing an estimate of the zero of a provided symbolic function
+# Properties: Function (fun), Jacobian (J), independent variable vector (vars_indep)
+#             x-coordinate (pt), value at x-coordinate (ptVal)
+# Solver parameters: convergence criteria (tol) and maximum number of iterations (max_iter)
 @dataclass
 class NewtonMethod:
     tol: float
@@ -38,7 +42,7 @@ class NewtonMethod:
             if self.dim == 0: raise Exception("Symbolic function has no independent variables")
             fun_vars = [list(fun_component.free_symbols) for fun_component in input_fun]
             if not all(fun_var in self.vars_indep for fun_var in fun_vars[0]): raise Exception("Function contains unrecognized variable")
-        # else: raise Exception("Function is not a symbolic expression")
+        # ADD AND TEST >> else: raise Exception("Function is not a symbolic expression")
         self._fun = input_fun
 
     @property
@@ -51,7 +55,7 @@ class NewtonMethod:
             self.J = self.fun.jacobian(self.vars_indep)
         else:
             if not all(isinstance(element, sp.Expr) for element in input_J): raise Exception("Jacobian is not a symbolic expression")
-            # Add code to verify Jacobian size/shape and variables
+            # ADD AND TEST >> code to verify Jacobian size/shape and variables
             self._J = input_J
 
     @property
@@ -71,7 +75,12 @@ class NewtonMethod:
     def max_iter(self, input_max_iter):
         if input_max_iter <= 0: raise Exception("Max number of iterations must be greater than zero")
         self._max_iter = input_max_iter
-        
+
+    
+    # Define iteration method for the "NewtonMethod" object so that
+    # each iteration produces the next estimate of the zero (and the corresponding function evaluation) 
+    #   - Stop iteration on error (function evaluation issue or singular Jacobian), 
+    #     or if a solver termination criteria is met (convergence or maximum number of iterations)  
     def __iter__(self):
         return self
     
