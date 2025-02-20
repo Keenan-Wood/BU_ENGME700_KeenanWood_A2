@@ -22,17 +22,10 @@
 # Newton's Method Implementation
 
 ### Table of Contents
-* [Getting Started](#gs)
 * [Newton Method Algorithm](#algo)
 * [Conda environment, installation, and testing](#install)
 * [Tutorial](#tutorial)
 * [More Information](#more)
-
----
-
-### Getting Started
-
-To be written
 
 ---
 
@@ -77,7 +70,7 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
 
 ### Tutorial <a name="tutorial"></a>
 
-#### **What Does the Function Do?**
+#### Documentation**
 
 The `NewtonMethod` class instantiates with:
 - A symbolic expression, or array of expressions, **fun**
@@ -95,13 +88,9 @@ Iterating over the initialized object until finished results in a final object w
 
 ---
 
-### **Summary of Errors and Their Causes**
-
-To be written
-
----
-
 #### **Examples**
+
+##### 1. System of Equations
 
     x, y, z = sp.symbols('x y z')
     fun_expr = sp.Matrix([1 + x + y, x**2 - y**3 + z, x*y - z])
@@ -116,6 +105,18 @@ To be written
 
    Output:
    x= [-2.32471796  1.32471796 -3.07959562] ; # of iterations= 12
+
+##### 2.  Potential Energy of an arrangement of linear springs
+    x, y, z = sp.symbols('x y z')
+    fun_expr = (x-.5)**2 + (y-1)**2 + (z-3)**2
+    fun_vars = [x, y, z]
+    start_pt = np.array([1,1,1])
+    newton = NewtonMethod(fun_expr, fun_vars, start_pt)
+    subNewton = None
+    for subNewton in newton:
+        pass
+    if not subNewton is None: 
+        print("x=", subNewton.pt, ";", "# of iterations=", subNewton.num_iter)
 
 ---
 
@@ -144,17 +145,9 @@ The **Predictor-Corrector** approach consists in using data to approximate a sol
 
 The elasto-plastic model considers materials to be elastic until they reach their yield stress, at which point plastic flow starts occuring. In conjuction with the isotropic hardening model, the material's yield surface expands under plastic loading, while in the kinematic hardening model, the yield surface remains the same size, but its center, defined by a *back-stress*, shifts in the direction of the applied load.
 
-The module presented here establishes a *material* and an *ElastoPlastic* class. The *material* class holds the basic material properties (the elastic and plastic moduli, and the yield strength before loading), and the ElastoPlastic class generates an object on which a *stretch()* method can be calculate its stress and strain after applying a series of strain increments. Two parameters to the stretch function determine the hardening behavior - if either is set to 0 and the other to 1, then the material will harden either fully isotropically or kinematically. The values can be adjusted to calculate the results of mixed hardening.
+The module presented here establishes a *material* and an *ElastoPlastic* class. The *material* class holds the basic material properties (the elastic and plastic moduli, and the yield strength before loading), and the ElastoPlastic class generates a deformable object on which a *stretch()* method can be calculate its stress and strain after applying a series of strain increments. Two parameters to the stretch function determine the hardening behavior - if either is set to 0 and the other to 1, then the material will harden either fully isotropically or kinematically. The values can be adjusted to calculate the results of mixed hardening.
 
-Instead of checking if the difference of the stress and the yield stress is negative to see if the material is in the elastic regime, the *stretch()* method takes the *min()* of 0 and the difference, so that no branching is necessary (ie. the value being 0 instead of negative naturally calculates elastic behavior).
-
----
-
-### To-Do
-- Debug pytest's file-finding/system path issue (see errors section)
-- Add matplotlib functionallity for easy data visualization
-- Verify the results with commercial solvers
-- Expand the tutorial examples with rich descriptions and examples of how small changes effect the results
+Instead of checking if the difference of the stress and the yield stress is negative to see if the material is in the elastic regime, the *stretch()* method takes the *max()* of 0 and the difference, so that no branching is necessary (ie. the value being 0 instead of negative naturally calculates elastic behavior).
 
 ---
 
@@ -165,6 +158,7 @@ To install this package, please begin by setting up a conda environment and acti
 conda create --name elastoplastic-env python=3.12
 conda activate elastoplastic-env
 ```
+If using VSCode, make sure to select the newly-activated environment as the Python Interpreter.
 
 Navigate to the project directory (the *ElastoPlastic* folder) and create an editable install of the code:
 ```bash
@@ -176,11 +170,9 @@ Test that the code is working with pytest:
 pytest -v --cov=elastoplastic --cov-report term-missing
 ```
 
-If you are using VSCode to run this code, don't forget to set VSCode virtual environment to the newly-activated environment.
-
 ---
 
-### Tutorial <a name="tutorial"></a>
+### Documentation <a name="documentation"></a>
 
 #### **Class Structure**
 
@@ -205,13 +197,11 @@ Once instantiated, an ElastoPlastic object can be acted upon with the **stretch(
 
 ---
 
-### **Summary of Errors and Their Causes**
+#### **Tutorial**
 
-Known issue: pytest does not recognize elastoplastic module (likely system path/reference issue)
+For a tutorial with examples, please run the *tutorial_elastoplastic.ipynb* Jupyter notebook (of course, be sure Jupyter is installed correctly first).
 
----
-
-#### **Examples**
+**Other usage examples**
 
 ##### Steel - Isotropic Hardening
     steel = material('steel', 210, 2.10, 0.250)
@@ -246,7 +236,7 @@ Known issue: pytest does not recognize elastoplastic module (likely system path/
 ---
 
 ### More information <a name="more"></a>
-More information can be found here:
+A good introduction to plastic deformation can be found at
 * https://innovationspace.ansys.com/courses/wp-content/uploads/sites/5/2020/12/Lesson-3-Hardening-of-Plasticity.pdf
 
 </details>
