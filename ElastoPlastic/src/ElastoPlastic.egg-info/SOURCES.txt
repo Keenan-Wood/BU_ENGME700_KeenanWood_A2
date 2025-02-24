@@ -1,9 +1,0 @@
-pyproject.toml
-src/__init__.py
-src/elastoplatic.py
-src/ElastoPlastic.egg-info/PKG-INFO
-src/ElastoPlastic.egg-info/SOURCES.txt
-src/ElastoPlastic.egg-info/dependency_links.txt
-src/ElastoPlastic.egg-info/requires.txt
-src/ElastoPlastic.egg-info/top_level.txt
-tests/test_elastoplastic.py
