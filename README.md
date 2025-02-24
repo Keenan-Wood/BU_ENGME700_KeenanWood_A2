@@ -7,6 +7,7 @@
 [![codecov](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1/graph/badge.svg?token=p5DMvJ6byO)](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1)
 [![tests](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions/workflows/tests.yml/badge.svg)](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions)
 
+## Apologies, this repo is under construction - advice on class structure or logic would be helpful though - thanks!
 ---
 
 <details>
