@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class node:
     id: int
 
-    def __init__(self, coords: list = [0,0,0,0,0,0], supported: list = [], exisiting_nodes: list = [], id = None):
+    def __init__(self, coords: list = [0,0,0,0,0,0], fixed_dof: list = [], exisiting_nodes: list = [], id = None):
         N_nodes = len(existing_nodes)
         if N_nodes > 0:
             existing_node_ids = [existing_nodes[i_node].id for i_node in range(0, N_nodes)]
@@ -18,11 +18,11 @@ class node:
         if not isinstance(id, int): raise Exception('Invalid node id type')
         elif id < 0: raise Exception('Node id must be positive')
         self.id = id
-        self.add_support(self, supported)
+        self.apply_constraint(self, fixed_dof)
             
-    def add_support(self, support: int):
-        if self.supported is None: self.supported = []
-        self.supported = list(set(self.supported).union(support))
+    def apply_constraint(self, fixed_dof: int):
+        if self.fixed is None: self.fixed = []
+        self.fixed = list(set(self.fixed).union(fixed_dof))
 
 @dataclass
 class material:
@@ -134,6 +134,8 @@ class frame:
             self.elements = elements
         else:
             self.add_elements(self, elements)
+        self.assemble_stiffness_matrix()
+        self.partition_stiffness_matrix()
 
     def add_nodes(self, node_arg_list: list):
         for i_node in range(0, len(node_arg_list)):
@@ -143,7 +145,23 @@ class frame:
         for i_element in range(0, len(element_arg_list)):
             self.elements.append(element(*[element_arg_list[i_element]]))
 
-    def handle_inputs_compose_arrays(ar1, ar2, a, b):
+    def assemble_stiffness_matrix(self):
+        self.K_e = np.zeros(len(self.nodes), len(self.nodes))
+        for elem in self.elements:
+            self.K_e = overlay_array(self.K_e, elem.K_e, elem.node_a.id, elem.node_b.id)
+
+    def overlay_array(ar1: np.array, ar2: np.array, a: int, b: int):
+        (a, b) = handle_inputs_overlay_array(ar1, ar2, a, b)
+        w2 = len(ar2)/2
+        a_rng = range(a*w2, (a+1)*w2)
+        b_rng = range(b*w2, (b+1)*w2)
+        ar1[a_rng, a_rng] = ar1[a_rng, a_rng] + ar2[0:w2, 0:w2]
+        ar1[a_rng, b_rng] = ar1[a_rng, b_rng] + ar2[0:w2, w2:-1]
+        ar1[b_rng, a_rng] = ar1[b_rng, a_rng] + ar2[w2:-1, 0:w2]
+        ar1[b_rng, b_rng] = ar1[b_rng, b_rng] + ar2[w2:-1, w2:-1]
+        return ar1
+
+    def handle_inputs_overlay_array(ar1, ar2, a, b):
         w2 = len(ar2)/2
         if w2 > floor(w2): raise Exception('Small array must have even dimensions')
         if len(ar2) != len(ar2[0]): raise Exception('Small array must be square')
@@ -158,26 +176,43 @@ class frame:
         else:
             return (a, b)
 
-    def compose_arrays(ar1: np.array, ar2: np.array, a: int, b: int):
-        (a, b) = handle_inputs_compose_arrays(ar1, ar2, a, b)
-        w2 = len(ar2)/2
-        a_rng = range(a*w2, (a+1)*w2)
-        b_rng = range(b*w2, (b+1)*w2)
-        ar1[a_rng, a_rng] = ar1[a_rng, a_rng] + ar2[0:w2, 0:w2]
-        ar1[a_rng, b_rng] = ar1[a_rng, b_rng] + ar2[0:w2, w2:-1]
-        ar1[b_rng, a_rng] = ar1[b_rng, a_rng] + ar2[w2:-1, 0:w2]
-        ar1[b_rng, b_rng] = ar1[b_rng, b_rng] + ar2[w2:-1, w2:-1]
-        return ar1
+    def partition_stiffness_matrix(self):
+        free_ind = []
+        fixed_ind = []
+        K_e_free = []
+        K_e_supported = []
+        for node_id in range(0, len(self.K_e)/6):
+            for node_dof in range(0, 6):
+                eqn_row = 6*node_id + node_dof
+                if node_dof in self.nodes[node_id].fixed:
+                    free_ind.append(eqn_row)
+                    K_e_free = np.vstack(K_e_free, self.K_e[eqn_row])
+                else:
+                    fixed_ind.append(eqn_row)
+                    K_e_supported = np.vstack(K_e_supported, self.K_e[eqn_row])
+        N_free = len(K_e_free)
+        self.K_e_ff = K_e_free[:, 0:N_free]
+        self.K_e_sf = K_e_supported[:, 0:N_free]
+        self.free_ind = free_ind
+        self.fixed_ind = fixed_ind
 
-    def assemble_stiffness_matrix(self):
-        self.K_e = np.zeros(len(self.nodes), len(self.nodes))
-        for elem in self.elements:
-            self.K_e = compose_arrays(self.K_e, elem.K_e, elem.node_a.id, elem.node_b.id)
-
-
-
-
-    def deform(self, forces):
+    def calc_apply_load(self, forces, node_ids):
         # Update node positions and internal forces using the direct stiffness method
-        self.nodes.coords
+        free_forces = []
+        for node_id in node_ids:
+            for dof in range(0, 6):
+                if 6*node_id + dof in self.free_ind:
+                    free_forces.append(forces[node_ids.index(node_id)][dof])
 
+        free_disps = np.matmul(np.linalg.inv(self.K_e_ff), free_forces)
+        support_forces = np.matmul(self.K_e_sf, coords_free)
+        all_forces = np.zeros(6*len(self.nodes), 6*len(self.nodes))
+        all_disps = np.zeros(6*len(self.nodes), 6*len(self.nodes))
+        # all_coords = [coord for coord in node.coords for node in self.nodes]
+        for i_dof in range(0, 6*len(self.nodes)):
+            if i_dof in self.free_ind:
+                all_forces[i_dof] = free_forces[self.free_ind.index(i_dof)]
+                all_disps[i_dof] = free_disps[self.free_ind.index(i_dof)]
+            else:
+                all_forces[i_dof] = support_forces[self.fixed_ind.index(i_dof)]
+        return (all_disps, all_forces)
