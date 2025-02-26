@@ -181,15 +181,15 @@ class frame:
         fixed_ind = []
         K_e_free = []
         K_e_supported = []
-        for node_id in range(0, len(self.K_e)/6):
-            for node_dof in range(0, 6):
-                eqn_row = 6*node_id + node_dof
-                if node_dof in self.nodes[node_id].fixed:
-                    free_ind.append(eqn_row)
-                    K_e_free = np.vstack(K_e_free, self.K_e[eqn_row])
-                else:
-                    fixed_ind.append(eqn_row)
-                    K_e_supported = np.vstack(K_e_supported, self.K_e[eqn_row])
+        for i_dof in range(0, 6*len(self.nodes)):
+            node_id = np.floor(i_dof/6)
+            dof_id = np.fmod(i_dof, 6)
+            if dof_id in self.nodes[node_id].fixed:
+                free_ind.append(i_dof)
+                K_e_free = np.vstack(K_e_free, self.K_e[i_dof])
+            else:
+                fixed_ind.append(i_dof)
+                K_e_supported = np.vstack(K_e_supported, self.K_e[i_dof])
         N_free = len(K_e_free)
         self.K_e_ff = K_e_free[:, 0:N_free]
         self.K_e_sf = K_e_supported[:, 0:N_free]
@@ -199,10 +199,11 @@ class frame:
     def calc_apply_load(self, forces, node_ids):
         # Update node positions and internal forces using the direct stiffness method
         free_forces = []
-        for node_id in node_ids:
-            for dof in range(0, 6):
-                if 6*node_id + dof in self.free_ind:
-                    free_forces.append(forces[node_ids.index(node_id)][dof])
+        for i_dof in range(0, 6*len(self.nodes)):
+            if i_dof in self.free_ind:
+                node_id = np.floor(i_dof/6)
+                dof_id = np.fmod(i_dof, 6)
+                free_forces.append(forces[node_ids.index(node_id)][dof_id])
 
         free_disps = np.matmul(np.linalg.inv(self.K_e_ff), free_forces)
         support_forces = np.matmul(self.K_e_sf, coords_free)
