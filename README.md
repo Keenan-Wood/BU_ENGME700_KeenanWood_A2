@@ -8,7 +8,7 @@
 [![tests](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions/workflows/tests.yml/badge.svg)](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions)
 
 ## Apologies, the code has not been successfully tested yet
-### Please see the example below for how a problem should be set up, and how applying a load should be done
+### Please see the example below (under Core Implementation) for how a problem should be set up, and how applying a load should be done
 ### Advice on code (see StructuralFrame.py and test_frame.py) is very appreciated - thanks!
 ---
 
