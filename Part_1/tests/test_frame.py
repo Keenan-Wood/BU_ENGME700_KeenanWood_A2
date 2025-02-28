@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from StructuralFrame import *
+from StructuralFrame_2 import *
 
 def test_example_1():
     # Build node initialization arguments
