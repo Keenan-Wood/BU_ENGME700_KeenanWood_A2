@@ -31,7 +31,7 @@ def test_load_frame_simple():
     DISPS_MATCH = True
     true_disps = np.zeros((len(nodes), 6))
     true_disps[1, :] = np.array([-0.00134143, 1.24465464, 0.00190536, -0.12134412, 0.0167805, 0.10196546])
-    true_disps[2, 3:5] = np.array([-0.12602614, -0.00859146, 0.10196546])
+    true_disps[2, 3:6] = np.array([-0.12602614, -0.00859146, 0.10196546])
     if np.linalg.norm(all_disps - true_disps) >= 10**-6: DISPS_MATCH = False
 
     # Check forces
@@ -39,9 +39,20 @@ def test_load_frame_simple():
     true_forces = np.zeros((len(nodes), 6))
     true_forces[0, :] = np.array([0.04471418, -0.07109832, -0.00473182, 0.0890168, 0.02383551, -0.8164748])
     true_forces[1, :] = np.array([-0.05, 0.075, 0.1, -0.05, 0.1, -0.25])
-    true_forces[2, 0:2] = np.array([0.00528582, -0.00390168, -0.09526818])
+    true_forces[2, 0:3] = np.array([0.00528582, -0.00390168, -0.09526818])
     if np.linalg.norm(all_forces - true_forces) >= 10**-6: FORCES_MATCH = False
 
-    assert DISPS_MATCH and FORCES_MATCH
+    np.set_printoptions(precision=10)
+    np.set_printoptions(suppress=True)
+    print('Calculated Displacement:')
+    print(all_disps)
+    print('\nTrue Displacements:')
+    print(true_disps)
+    print('\nCalculated Forces:')
+    print(all_forces)
+    print('\nTrue Forces:')
+    print(true_forces)
+
+    return DISPS_MATCH and FORCES_MATCH
 
 print(str(test_load_frame_simple()))

@@ -1,4 +1,5 @@
 import numpy as np
+import math_utils as mu
 
 def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint_list: list, force_list: list):
     N_nodes = len(nodes)
@@ -22,10 +23,17 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
             elements[i_el][3] = get_assumed_z_vec(node_pair)
 
     # Assemble frame stiffness matrix
-    Ke = np.zeros((N_nodes, N_nodes))
+    Ke = np.zeros((6*N_nodes, 6*N_nodes))
     for i_el in range(N_elements):
         node_pair = np.vstack((nodes[elements[i_el][0], :], nodes[elements[i_el][1], :]))
         local_Ke = calc_local_stiffness(node_pair, xsections_list[elements[i_el][2]])
+
+        # Compare with provided function
+        (E, A, Iy, Iz, J, v) = tuple(xsections_list[elements[i_el][2]])
+        L = np.linalg.norm(node_pair[1, :] - node_pair[0, :])
+        check_Ke = mu.local_elastic_stiffness_matrix_3D_beam(E, v, A, L, Iy, Iz, J)
+        Ke_dif = np.round(local_Ke - check_Ke, 10)
+        
         gam_full = calc_coord_transform(node_pair, elements[i_el][3])
         global_Ke = np.matmul(np.transpose(gam_full), np.matmul(local_Ke, gam_full))
         Ke = overlay_array(Ke, global_Ke, elements[i_el][0], elements[i_el][1])
@@ -33,8 +41,8 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     # Partition frame stiffness matrix
     free_ind = np.flatnonzero(constrained == 0)
     fixed_ind = np.flatnonzero(constrained)
-    Ke_ff = Ke[free_ind, free_ind]
-    Ke_sf = Ke[fixed_ind, free_ind]
+    Ke_ff = Ke[np.ix_(free_ind, free_ind)]
+    Ke_sf = Ke[np.ix_(fixed_ind, free_ind)]
 
     # Calculate displacements and forces
     all_disps = np.zeros(6*N_nodes)
@@ -43,8 +51,8 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     support_forces = np.matmul(Ke_sf, free_disps)
     all_disps[free_ind] = free_disps
     all_forces[fixed_ind] = support_forces
-    all_disps.reshape(N_nodes, 6)
-    all_forces.reshape(N_nodes, 6)
+    all_disps = np.reshape(all_disps, (N_nodes, 6))
+    all_forces = np.reshape(all_forces, (N_nodes, 6))
 
     return (all_disps, all_forces)
 
@@ -74,6 +82,9 @@ def calc_local_stiffness(node_pair: np.array, xsec: list):
 def calc_coord_transform(node_pair: np.array, z_vec: np.array):
     x_vec = node_pair[1, 0:3] - node_pair[0, 0:3]
     y_vec = np.cross(z_vec, x_vec)
+    x_vec = x_vec / np.linalg.norm(x_vec)
+    y_vec = y_vec / np.linalg.norm(y_vec)
+    z_vec = z_vec / np.linalg.norm(z_vec)
     gam_small = np.vstack((x_vec, y_vec, z_vec)).transpose()
     gam_full = np.zeros((12, 12))
     for i in range(0,4):
@@ -83,10 +94,10 @@ def calc_coord_transform(node_pair: np.array, z_vec: np.array):
 def overlay_array(ar1: np.array, ar2: np.array, a: int, b: int):
     #(a, b) = handle_inputs_overlay_array(ar1, ar2, a, b)
     w2 = int(len(ar2)/2)
-    a_rng = range(a*w2, (a+1)*w2)
-    b_rng = range(b*w2, (b+1)*w2)
+    a_rng = np.s_[a*w2:(a+1)*w2]
+    b_rng = np.s_[b*w2:(b+1)*w2]
     ar1[a_rng, a_rng] = ar1[a_rng, a_rng] + ar2[0:w2, 0:w2]
-    ar1[a_rng, b_rng] = ar1[a_rng, b_rng] + ar2[0:w2, w2:-1]
-    ar1[b_rng, a_rng] = ar1[b_rng, a_rng] + ar2[w2:-1, 0:w2]
-    ar1[b_rng, b_rng] = ar1[b_rng, b_rng] + ar2[w2:-1, w2:-1]
+    ar1[a_rng, b_rng] = ar1[a_rng, b_rng] + ar2[0:w2, w2:2*w2]
+    ar1[b_rng, a_rng] = ar1[b_rng, a_rng] + ar2[w2:2*w2, 0:w2]
+    ar1[b_rng, b_rng] = ar1[b_rng, b_rng] + ar2[w2:2*w2, w2:2*w2]
     return ar1
