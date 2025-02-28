@@ -2,7 +2,8 @@ import numpy as np
 
 # Frame geometry definition
 nodes = np.array([[0,0,10,0,0,0], [15,0,10,0,0,0], [15,0,0,0,0,0]])
-elements = [[0,1,0], [1,2,0]]
+zvec = np.array([[0,0,1], [1,0,0]])
+elements = [[0,1,0,zvec[0,:]], [1,2,0,zvec[1,:]]]
 
 # Cross section list
 E = 1000
@@ -14,17 +15,20 @@ v = .3
 xsection = [[E, A, I_y, I_z, J, v]]
 
 # Constraint list (node_id, type) - 1 for pinned, 2 for fixed
-fixed_dof = [[0,2], [2,1]]
+constraints = [[0,2], [2,1]]
 
 # Force list (node_id, forces on each DOF)
 forces = [[1,-0.05,0.075,0.1,-0.05,0.1,-0.25]]
 
-def load_frame(nodes: np.array, element_list: list, xsections_list: list, constraint_list: list, force_list: list):
-    # Build element array
+
+def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint_list: list, force_list: list):
     N_nodes = len(nodes)
-    elements = zeros((N_nodes, N_nodes))
-    for node_pair in element_list:
-        elements[node_pair[0], node_pair[1]] = node_pair[3]
+    N_elements = len(elements)
+
+    # Build element array
+    #elements = zeros((N_nodes, N_nodes))
+    #for node_pair in element_list:
+    #    elements[node_pair[0], node_pair[1]] = node_pair[3]
 
     # Build constraint array
     constrained = np.zeros((N_nodes, 6))
@@ -36,8 +40,19 @@ def load_frame(nodes: np.array, element_list: list, xsections_list: list, constr
     forces = np.zeros((N_nodes, 6))
     for force in force_list:
         forces[force[0]] = force[1:6]
+    
+    # Fill z_vec_list if not provided
+    for i_el in range(N_elements):
+        if not elements[i_el][3]:
+            node_pair = np.vstack(nodes[elements[i_el][0]], nodes[elements[i_el][1]])
+            elements[i_el][3] = get_assumed_z_vec(node_pair)
 
-
+####################
+    # Assemble global stiffness matrix
+    frame_K_e = np.zeros(len(self.nodes), len(self.nodes))
+    for elem in elements:
+        frame_K_e = overlay_array(frame_K_e, elem_K_e, elem.node_a.id, elem.node_b.id)
+##################################
 
 
 def get_assumed_z_vec(node_pair: np.array):
@@ -70,11 +85,6 @@ def calc_local_stiffness(node_pair: np.array, xsec: list):
     k_d = np.diag(k_diag_1) - np.fliplr(np.diag(k_cross_2, -1))
     K_local = E*A/L * np.vstack(np.hstack(k_a, k_b), np.hstack(k_c, k_d))
     return K_local
-
-def assemble_stiffness_matrix(self):
-    self.K_e = np.zeros(len(self.nodes), len(self.nodes))
-    for elem in self.elements:
-        self.K_e = overlay_array(self.K_e, elem.K_e, elem.node_a.id, elem.node_b.id)
 
 def overlay_array(ar1: np.array, ar2: np.array, a: int, b: int):
     (a, b) = handle_inputs_overlay_array(ar1, ar2, a, b)
