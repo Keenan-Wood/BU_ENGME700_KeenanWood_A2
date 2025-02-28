@@ -12,10 +12,7 @@ def test_load_frame_simple():
     # Cross section list
     E = 1000
     (b, h) = (.5, 1)
-    A = b*h
-    I_y = h*b**3/12
-    I_z = b*h**3/12
-    J = b*h*(b**2+h**2)/12
+    (A, I_y, I_z, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12)
     v = .3
     xsection = [[E, A, I_y, I_z, J, v]]
 
@@ -23,7 +20,7 @@ def test_load_frame_simple():
     constraints = [[0,2], [2,1]]
 
     # Force list (node_id, forces on each DOF)
-    forces = [[1,-0.05,0.075,0.1,-0.05,0.1,-0.25]]
+    forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
     (all_disps, all_forces) = load_frame(nodes, elements, xsection, constraints, forces)
 
@@ -56,3 +53,13 @@ def test_load_frame_simple():
     return DISPS_MATCH and FORCES_MATCH
 
 print(str(test_load_frame_simple()))
+
+# Debug Notes:
+
+# Disp Errors: 
+# Node 1: y, tx, tz
+# Node 2:    tx, tz
+
+# Force Errors:
+# Node 1: y, Mx, Mz
+# Node 2:    Mx, Mz
