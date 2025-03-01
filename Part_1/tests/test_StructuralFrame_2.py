@@ -12,7 +12,7 @@ def test_load_frame_simple():
     # Cross section list
     E = 1000
     (b, h) = (.5, 1)
-    (A, I_y, I_z, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12)
+    (A, I_y, I_z, J) = (b*h, h*b**3/12, b*h**3/12, .02861)
     v = .3
     xsection = [[E, A, I_y, I_z, J, v]]
 
