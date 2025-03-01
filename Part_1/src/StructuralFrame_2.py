@@ -36,7 +36,9 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         
         gam_full = calc_coord_transform(node_pair, elements[i_el][3])
         global_Ke = np.matmul(np.transpose(gam_full), np.matmul(local_Ke, gam_full))
-        Ke = overlay_array(Ke, global_Ke, elements[i_el][0], elements[i_el][1])
+        a_rng = np.arange(6*elements[i_el][0], 6*(elements[i_el][0]+1))
+        b_rng = np.arange(6*elements[i_el][1], 6*(elements[i_el][1]+1))
+        Ke[np.ix_(np.concatenate((a_rng,b_rng)), np.concatenate((a_rng,b_rng)))] += global_Ke
 
     # Partition frame stiffness matrix
     free_ind = np.flatnonzero(constrained == 0)
@@ -102,14 +104,3 @@ def calc_coord_transform(node_pair: np.array, z_vec: np.array):
     #gam_full_dif = gam_full - mu.transformation_matrix_3D(check_gam)
 
     return gam_full
-
-def overlay_array(ar1: np.array, ar2: np.array, a: int, b: int):
-    #(a, b) = handle_inputs_overlay_array(ar1, ar2, a, b)
-    w2 = int(len(ar2)/2)
-    a_rng = np.s_[a*w2:(a+1)*w2]
-    b_rng = np.s_[b*w2:(b+1)*w2]
-    ar1[a_rng, a_rng] = ar1[a_rng, a_rng] + ar2[0:w2, 0:w2]
-    ar1[a_rng, b_rng] = ar1[a_rng, b_rng] + ar2[0:w2, w2:2*w2]
-    ar1[b_rng, a_rng] = ar1[b_rng, a_rng] + ar2[w2:2*w2, 0:w2]
-    ar1[b_rng, b_rng] = ar1[b_rng, b_rng] + ar2[w2:2*w2, w2:2*w2]
-    return ar1

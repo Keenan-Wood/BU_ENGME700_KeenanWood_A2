@@ -61,5 +61,5 @@ print(str(test_load_frame_simple()))
 # Node 2:    tx, tz
 
 # Force Errors:
-# Node 1: y, Mx, Mz
+# Node 0: y, Mx, Mz
 # Node 2:    Mx, Mz
