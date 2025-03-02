@@ -16,8 +16,8 @@ def test_load_frame_simple():
     v = .3
     xsection = [[E, A, I_y, I_z, J, v]]
 
-    # Constraint list (node_id, type) - 1 for pinned, 2 for fixed
-    constraints = [[0,2], [2,1]]
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,1,1,1,1,1,1], [2,1,1,1,0,0,0]]
 
     # Force list (node_id, forces on each DOF)
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
@@ -52,14 +52,56 @@ def test_load_frame_simple():
 
     return DISPS_MATCH and FORCES_MATCH
 
-print(str(test_load_frame_simple()))
+def test_load_frame_simple_2():
+    # Frame geometry definition
+    nodes = np.array([[0,0,0,0,0,0], [-5,1,10,0,0,0], [-1,5,13,0,0,0],[-3,7,11,0,0,0],[6,9,5,0,0,0]])
+    elements = [[0,1,0,[]], [1,2,0,[]], [2,3,0,[]], [2,4,0,[]]]
 
-# Debug Notes:
+    # Cross section list
+    E = 500
+    r = 1
+    (A, I_y, I_z, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
+    v = .3
+    xsection = [[E, A, I_y, I_z, J, v]]
 
-# Disp Errors: 
-# Node 1: y, tx, tz
-# Node 2:    tx, tz
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
 
-# Force Errors:
-# Node 0: y, Mx, Mz
-# Node 2:    Mx, Mz
+    # Force list (node_id, forces on each DOF)
+    forces = [[1, 0.05, 0.05, -0.1, 0, 0, 0], [2, 0, 0, 0, -0.1, -0.1, 0.3]]
+
+    (all_disps, all_forces) = load_frame(nodes, elements, xsection, constraints, forces)
+
+    # Check displacements
+    DISPS_MATCH = True
+    true_disps = np.zeros((len(nodes), 6))
+    true_disps[0, :] = np.array([.12500826, .06604393, 0, .00498268, -.00977281, .00237119])
+    true_disps[1, :] = np.array([.02913522, .00351598, -.04180902, .00523327, -.00851986, .00237119])
+    true_disps[2, :] = np.array([8.66002551e-5, 7.23622353e-4, 4.38264195e-4, 1.8077038e-3, -2.97736985e-3, 2.52180509e-3])
+    true_disps[4, 3:6] = np.array([-.00257306, .00062871, .00049162])
+    if np.linalg.norm(all_disps - true_disps) >= 10**-6: DISPS_MATCH = False
+
+    # Check forces
+    FORCES_MATCH = True
+    true_forces = np.zeros((len(nodes), 6))
+    for force in forces:
+        true_forces[force[0], :] = force[1:7]
+    true_forces[0, 2] = .01753352
+    true_forces[3, :] = np.array([-.03892948, -.02361856, .10543765, -.22303444, .1294369, -.28470812])
+    true_forces[4, 0:3] = np.array([-.01107052, -.02638144, -.02297117])
+    if np.linalg.norm(all_forces - true_forces) >= 10**-6: FORCES_MATCH = False
+
+    np.set_printoptions(precision=10)
+    np.set_printoptions(suppress=True)
+    print('Calculated Displacement:')
+    print(all_disps)
+    print('\nTrue Displacements:')
+    print(true_disps)
+    print('\nCalculated Forces:')
+    print(all_forces)
+    print('\nTrue Forces:')
+    print(true_forces)
+
+    return DISPS_MATCH and FORCES_MATCH
+
+print(test_load_frame_simple_2())
