@@ -12,9 +12,9 @@ def test_load_frame_simple():
     # Cross section list
     E = 1000
     (b, h) = (.5, 1)
-    (A, I_y, I_z, J) = (b*h, h*b**3/12, b*h**3/12, .02861)
+    (A, I_y, I_z, I_p, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12, .02861)
     v = .3
-    xsection = [[E, A, I_y, I_z, J, v]]
+    xsection = [[E, A, I_y, I_z, I_p, J, v]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1], [2,1,1,1,0,0,0]]
@@ -60,9 +60,9 @@ def test_load_frame_simple_2():
     # Cross section list
     E = 500
     r = 1
-    (A, I_y, I_z, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
+    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2, np.pi*r**4/2)
     v = .3
-    xsection = [[E, A, I_y, I_z, J, v]]
+    xsection = [[E, A, I_y, I_z, I_p, J, v]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
