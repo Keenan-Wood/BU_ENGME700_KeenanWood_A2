@@ -23,6 +23,7 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
 
     # Assemble frame stiffness matrices
     Ke = np.zeros((6*N_nodes, 6*N_nodes))
+    Kg = np.zeros((6*N_nodes, 6*N_nodes))
     for element in elements:
         node_pair = np.vstack((nodes[element[0], :], nodes[element[1], :]))
         local_Ke = calc_local_stiffness(node_pair, xsections_list[element[2]])
@@ -40,8 +41,15 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         b_rng = np.arange(6*element[1], 6*(element[1]+1))
         Ke[np.ix_(np.concatenate((a_rng,b_rng)), np.concatenate((a_rng,b_rng)))] += global_Ke
 
+        ### Change!! - Input forces from output of elastic stiffness analysis (transformed into local coords)
+        ### - Then solve for lambda with Kg_ff and Ke_ff (scipy.linalg.eig(Ke_ff, -Kg_ff)) - lambda_crit = smallest positive eigenvalue
+        ## Part 2: Elastic critical load (eigenvalue); Buckled shape (eigenvector)
+        ## Post processing - internal (interpolated) forces, displacements
         force_vec = np.vstack((forces[element[0], :], forces[element[1], :]))
-        Kg = calc_geometric_local_stiffness(node_pair, xsections_list[element[2]], force_vec)
+        local_Kg = calc_geometric_local_stiffness(node_pair, xsections_list[element[2]], force_vec)
+        global_Kg = np.matmul(np.transpose(gam_full), np.matmul(local_Kg, gam_full))
+        Kg[np.ix_(np.concatenate((a_rng,b_rng)), np.concatenate((a_rng,b_rng)))] += global_Kg
+
 
         # Compare with provided utility function
         L = np.linalg.norm(node_pair[1, :] - node_pair[0, :])
@@ -49,7 +57,7 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         (_, _, _, _, My1, Mz1) = tuple(force_vec[0,:])
         (Fx2, _, _, Mx2, My2, Mz2) = tuple(force_vec[1,:])
         check_Kg = mu.local_geometric_stiffness_matrix_3D_beam(L, A, Ip, Fx2, Mx2, My1, Mz1, My2, Mz2)
-        Kg_dif = Kg - check_Kg
+        Kg_dif = local_Kg - check_Kg
         if np.max(abs(Kg_dif)) > 10**-10: raise Exception("Incorrect Local Geometric Stiffness Matrix")
 
     # Partition frame stiffness matrix
@@ -57,6 +65,8 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     fixed_ind = np.flatnonzero(constrained)
     Ke_ff = Ke[np.ix_(free_ind, free_ind)]
     Ke_sf = Ke[np.ix_(fixed_ind, free_ind)]
+    Kg_ff = Kg[np.ix_(free_ind, free_ind)]
+    Kg_sf = Kg[np.ix_(fixed_ind, free_ind)]
 
     # Calculate displacements and forces
     all_disps = np.zeros(6*N_nodes)
