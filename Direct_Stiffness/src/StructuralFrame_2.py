@@ -143,7 +143,8 @@ def calc_coord_transform(node_pair: np.array, z_vec: np.array):
     for i in range(0,4):
         gam_full[3*i:3*i+3, 3*i:3*i+3] = gam_small
 
-    # Check gam_full with provided function
-    #gam_full_dif = gam_full - mu.transformation_matrix_3D(check_gam)
+    # Check gam_full with provided utility function
+    gam_full_dif = gam_full - mu.transformation_matrix_3D(check_gam)
+    if np.max(abs(gam_full_dif)) > 10**-10: raise Exception("Incorrect Full Transform Matrix")
 
     return gam_full
