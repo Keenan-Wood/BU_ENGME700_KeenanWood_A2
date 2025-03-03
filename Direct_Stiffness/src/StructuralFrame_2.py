@@ -50,7 +50,7 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         (Fx2, _, _, Mx2, My2, Mz2) = tuple(force_vec[1,:])
         check_Kg = mu.local_geometric_stiffness_matrix_3D_beam(L, A, Ip, Fx2, Mx2, My1, Mz1, My2, Mz2)
         Kg_dif = Kg - check_Kg
-        if np.max(abs(Kg_dif)) > 10**-10: Kg = check_Kg #raise Exception("Incorrect Local Geometric Stiffness Matrix")
+        if np.max(abs(Kg_dif)) > 10**-10: raise Exception("Incorrect Local Geometric Stiffness Matrix")
 
     # Partition frame stiffness matrix
     free_ind = np.flatnonzero(constrained == 0)
@@ -113,7 +113,7 @@ def calc_geometric_local_stiffness(node_pair: np.array, xsec, forces: np.array):
     k_b = -k_c - np.transpose(k_a) + np.diag(k_diag_2)
     k_b[3, 4:6] = np.array([-(Mz1+Mz2)/6, (My1+My2)/6])
     k_b[4, 5] = Mx2/2
-    k_b[4:5, 3] = k_b[3, 4:5]
+    k_b[4:6, 3] = k_b[3, 4:6]
     k_b[5, 4] = -Mx2/2
 
     Kg = np.zeros((12, 12))
