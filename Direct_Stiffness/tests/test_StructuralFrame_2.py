@@ -60,7 +60,7 @@ def test_load_frame_simple_2():
     # Cross section list
     E = 500
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2, np.pi*r**4/2)
+    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
     v = .3
     xsection = [[E, A, I_y, I_z, I_p, J, v]]
 
@@ -104,4 +104,4 @@ def test_load_frame_simple_2():
 
     return DISPS_MATCH and FORCES_MATCH
 
-print(test_load_frame_simple_2())
+print(test_load_frame_simple())
