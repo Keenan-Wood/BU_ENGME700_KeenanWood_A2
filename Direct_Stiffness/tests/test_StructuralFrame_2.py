@@ -104,4 +104,4 @@ def test_load_frame_simple_2():
 
     return DISPS_MATCH and FORCES_MATCH
 
-print(test_load_frame_simple())
+print(test_load_frame_simple_2())
