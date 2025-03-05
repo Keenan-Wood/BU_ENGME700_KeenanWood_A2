@@ -79,7 +79,7 @@ Inputs:
     ie. forces and moments applied to node 1:  
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
-*Outputs*
+Outputs:  
 (all_disps, all_forces, crit_vec) as numpy arrays with size (# Nodes x 6)  
 crit_factor as float
 
