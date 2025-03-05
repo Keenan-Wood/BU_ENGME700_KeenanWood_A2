@@ -35,6 +35,7 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
 
     # Calculate element forces
     ax = plt.figure().add_subplot(projection='3d')
+    (plt_x, plt_y, plt_z) = ([], [], [])
     (el_disps, el_forces) = (np.zeros((N_elements, 12)), np.zeros((N_elements, 12)))
     for i, element in enumerate(elements):
         x_vec = nodes[element[1], 0:3] - nodes[element[0], 0:3]
@@ -47,15 +48,15 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         # Plot interpolated element displacement using shape functions
         f_N = lambda x, L: np.array([1 - (x/L)**2*(3 - 2*x/L), x*(1 - x/L)**2, (x/L)**2*(3 - 2*x/L), x**2/L*(x/L - 1)])
         f_v = lambda x, L, vec: np.matmul(f_N(x, L), vec)
-        el_x = np.arange(0, element[4], 100)
+        el_x = np.linspace(0, element[4], 30)
         el_y = np.array([f_v(x, element[4], el_disps[i,[1,5,6,11]]) for x in el_x])
         el_z = np.array([f_v(x, element[4], el_disps[i,[2,4,7,10]]) for x in el_x])
         y_vec = np.cross(x_vec, element[3])
-        plt_x = el_x*x_vec[0] + el_y*y_vec[0] + el_z*element[3][0]
-        plt_y = el_x*x_vec[1] + el_y*y_vec[1] + el_z*element[3][1]
-        plt_z = el_x*x_vec[2] + el_y*y_vec[2] + el_z*element[3][2]
-        ax.plot(el_x, el_y, el_z)
-
+        plt_x.extend(el_x*x_vec[0] + el_y*y_vec[0] + el_z*element[3][0])
+        plt_y.extend(el_x*x_vec[1] + el_y*y_vec[1] + el_z*element[3][1])
+        plt_z.extend(el_x*x_vec[2] + el_y*y_vec[2] + el_z*element[3][2])
+    
+    ax.plot(plt_x, plt_y, plt_z)
     plt.show()
 
     # Assemble and Partition geometric stiffness matrix; Calculate critical load factor and vector

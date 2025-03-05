@@ -94,3 +94,4 @@ def solve_problem_3():
     print(crit_factor)
 
 solve_problem_3()
+# %%
