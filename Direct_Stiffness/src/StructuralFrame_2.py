@@ -9,21 +9,20 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     for constraint in constraint_list: constrained_dof[constraint[0]] = constraint[1:7]
     for force in applied_forces: forces[force[0], :] = force[1:7]
     
-    # Compute a z-vector for each element where not provided
+    # Append element lengths; Compute a z-vector for each element where not provided
     for i, element in enumerate(elements):
+        elements[i].append(np.linalg.norm(nodes[element[1], 0:3] - nodes[element[0], 0:3]))
         if len(element[3]) == 0:
             x_vec = nodes[element[1], 0:3] - nodes[element[0], 0:3]
             elements[i][3] = get_assumed_z_vec(x_vec)
 
-    # Assemble and partition frame stiffness matrices (elastic Ke and geometric Kg)
-    Ke = assemble_stiffness_matrix(nodes, elements, xsections_list, forces, calc_local_stiffness)
-    Kg = assemble_stiffness_matrix(nodes, elements, xsections_list, forces, calc_geometric_local_stiffness)
+    # Assemble and partition elastic frame stiffness matrix
+    Ke = assemble_stiffness_matrix(nodes, elements, xsections_list, np.zeros((N_elements, 12)), calc_local_stiffness)
     free_ind = np.flatnonzero(constrained_dof == 0)
     fixed_ind = np.flatnonzero(constrained_dof)
     ff_ind = np.ix_(free_ind, free_ind)
     sf_ind = np.ix_(fixed_ind, free_ind)
-    (Ke_ff, Kg_ff) = (Ke[ff_ind], Kg[ff_ind])
-    (Ke_sf, Kg_sf) = (Ke[sf_ind], Kg[sf_ind])
+    (Ke_ff, Ke_sf) = (Ke[ff_ind], Ke[sf_ind])
 
     # Calculate free displacements and support forces; Combine with known displacements and forces
     disps = np.zeros((N_nodes, 6))
@@ -32,6 +31,23 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     support_forces = np.matmul(Ke_sf, free_disps)
     disps_vec[free_ind] = free_disps
     forces_vec[fixed_ind] = support_forces
+
+    # Calculate element forces
+    (el_disps, el_forces) = (np.zeros((N_elements, 12)), np.zeros((N_elements, 12)))
+    for i, element in enumerate(elements):
+        x_vec = nodes[element[1], 0:3] - nodes[element[0], 0:3]
+        gam_full = calc_transformation_matrix(x_vec, element[3])
+        el_disp = np.hstack((disps[element[0],:], disps[element[1],:]))
+        el_disps[i,:] = np.matmul(gam_full, el_disp)
+        el_Ke = calc_local_stiffness(xsections_list[element[2]], element[4], [])
+        el_forces[i,:] = np.matmul(el_Ke, el_disps[i,:])
+    
+    # Assemble and Partition geometric stiffness matrix
+    Kg = assemble_stiffness_matrix(nodes, elements, xsections_list, el_forces, calc_geometric_local_stiffness)
+    (Kg_ff, Kg_sf) = (Kg[ff_ind], Kg[sf_ind])
+    (lambdas, eig_vects) = sp.linalg.eig(Ke_ff, -Kg_ff)
+    crit_ind = np.where(lambdas > 0, lambdas, np.inf).argmin()
+    (lamb_crit, eig_crit) = (lambdas[crit_ind], eig_vects[crit_ind, :])
 
     return (disps, forces)
 
@@ -48,18 +64,13 @@ def assemble_stiffness_matrix(nodes, elements, xsections_list, forces, fun_local
         ## Part 2: Elastic critical load (eigenvalue); Buckled shape (eigenvector)
         ## Post processing - internal (interpolated) forces, displacements
     K_full = np.zeros((6*len(nodes), 6*len(nodes)))
-    for element in elements:
+    for i, element in enumerate(elements):
         # Calculate stiffness matrix in local coordinates
-        force_vec = np.vstack((forces[element[0], :], forces[element[1], :]))
-        L = np.linalg.norm(nodes[element[1], :] - nodes[element[0], :])
-        local_K = fun_local(xsections_list[element[2]], L, force_vec)
+        local_K = fun_local(xsections_list[element[2]], element[4], forces[i,:])
         
         # Transform stiffness matrix to global coordinates with full (12x12) rotation matrix (gam_full)
         x_vec = nodes[element[1], 0:3] - nodes[element[0], 0:3]
-        gam = np.vstack((x_vec, np.cross(element[3], x_vec), element[3]))
-        row_norms = np.linalg.norm(gam, axis=1)
-        gam = gam / row_norms[:, np.newaxis]
-        gam_full = sp.sparse.block_diag((gam, gam, gam, gam)).toarray()
+        gam_full = calc_transformation_matrix(x_vec, element[3])
         global_K = np.matmul(gam_full.T, np.matmul(local_K, gam_full))
 
         # Add quadrants of global stiffness matrix to full matrix in positions defined by nodes
@@ -67,6 +78,13 @@ def assemble_stiffness_matrix(nodes, elements, xsections_list, forces, fun_local
         b_rng = np.arange(6*element[1], 6*(element[1]+1))
         K_full[np.ix_(np.concatenate((a_rng,b_rng)), np.concatenate((a_rng,b_rng)))] += global_K
     return K_full
+
+def calc_transformation_matrix(x_vec: np.array, z_vec: np.array):
+    gam = np.vstack((x_vec, np.cross(z_vec, x_vec), z_vec))
+    row_norms = np.linalg.norm(gam, axis=1)
+    gam = gam / row_norms[:, np.newaxis]
+    gam_full = sp.sparse.block_diag((gam, gam, gam, gam)).toarray()
+    return gam_full
 
 def calc_local_stiffness(xsec: list, L: float, _):
     (E, A, Iy, Iz, Ip, J, v) = tuple(xsec)
@@ -83,8 +101,8 @@ def calc_local_stiffness(xsec: list, L: float, _):
 
 def calc_geometric_local_stiffness(xsec: list, L: float, forces: np.array):
     (_, A, _, _, Ip, _, _) = tuple(xsec)
-    (_, _, _, _, My1, Mz1) = tuple(forces[0,:])
-    (Fx2, _, _, Mx2, My2, Mz2) = tuple(forces[1,:])
+    (_, _, _, _, My1, Mz1) = tuple(forces[0:6])
+    (Fx2, _, _, Mx2, My2, Mz2) = tuple(forces[6:12])
     k_diag_1 = Fx2/L * np.array([1, 6/5, 6/5, Ip/A, 2/15*L**2, 2/15*L**2])
     k_diag_2 = -k_diag_1 + Fx2 * np.array([0, 0, 0, 0, L/10, L/10])
 
