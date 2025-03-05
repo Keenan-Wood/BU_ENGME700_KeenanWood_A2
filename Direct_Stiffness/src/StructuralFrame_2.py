@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+import matplotlib.pyplot as plt
 
 def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint_list: list = [[]], applied_forces: list = [[]]):
     (N_nodes, N_elements) = (len(nodes), len(elements))
@@ -33,6 +34,7 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     forces_vec[fixed_ind] = support_forces
 
     # Calculate element forces
+    ax = plt.figure().add_subplot(projection='3d')
     (el_disps, el_forces) = (np.zeros((N_elements, 12)), np.zeros((N_elements, 12)))
     for i, element in enumerate(elements):
         x_vec = nodes[element[1], 0:3] - nodes[element[0], 0:3]
@@ -41,15 +43,32 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         el_disps[i,:] = np.matmul(gam_full, el_disp)
         el_Ke = calc_local_stiffness(xsections_list[element[2]], element[4], [])
         el_forces[i,:] = np.matmul(el_Ke, el_disps[i,:])
-    
-    # Assemble and Partition geometric stiffness matrix
-    Kg = assemble_stiffness_matrix(nodes, elements, xsections_list, el_forces, calc_geometric_local_stiffness)
-    (Kg_ff, Kg_sf) = (Kg[ff_ind], Kg[sf_ind])
-    (lambdas, eig_vects) = sp.linalg.eig(Ke_ff, -Kg_ff)
-    crit_ind = np.where(lambdas > 0, lambdas, np.inf).argmin()
-    (lamb_crit, eig_crit) = (lambdas[crit_ind], eig_vects[crit_ind, :])
 
-    return (disps, forces)
+        # Plot interpolated element displacement using shape functions
+        f_N = lambda x, L: np.array([1 - (x/L)**2*(3 - 2*x/L), x*(1 - x/L)**2, (x/L)**2*(3 - 2*x/L), x**2/L*(x/L - 1)])
+        f_v = lambda x, L, vec: np.matmul(f_N(x, L), vec)
+        el_x = np.arange(0, element[4], 100)
+        el_y = np.array([f_v(x, element[4], el_disps[i,[1,5,6,11]]) for x in el_x])
+        el_z = np.array([f_v(x, element[4], el_disps[i,[2,4,7,10]]) for x in el_x])
+        y_vec = np.cross(x_vec, element[3])
+        plt_x = el_x*x_vec[0] + el_y*y_vec[0] + el_z*element[3][0]
+        plt_y = el_x*x_vec[1] + el_y*y_vec[1] + el_z*element[3][1]
+        plt_z = el_x*x_vec[2] + el_y*y_vec[2] + el_z*element[3][2]
+        ax.plot(el_x, el_y, el_z)
+
+    plt.show()
+
+    # Assemble and Partition geometric stiffness matrix; Calculate critical load factor and vector
+    Kg = assemble_stiffness_matrix(nodes, elements, xsections_list, el_forces, calc_geometric_local_stiffness)
+    Kg_ff = Kg[ff_ind]
+    (eig_vals, eig_vects) = sp.linalg.eig(Ke_ff, -Kg_ff)
+    crit_ind = np.where(np.real(eig_vals) > 0, np.real(eig_vals), np.inf).argmin()
+    crit_load_factor = np.real(eig_vals[crit_ind])
+    crit_load_vec = np.zeros(6*N_nodes)
+    crit_load_vec[free_ind] = eig_vects[crit_ind, :]
+    crit_load_vec = crit_load_vec.reshape((N_nodes, 6))
+
+    return (disps, forces, crit_load_factor, crit_load_vec)
 
 def get_assumed_z_vec(x_vec: np.array):
     # Return a vector orthogonal to x_vec using the cross product; Cross x_vec with [1,-1,0] if x_vec is nearly parallel to [1,1,0]
@@ -59,10 +78,6 @@ def get_assumed_z_vec(x_vec: np.array):
     return z_vec
 
 def assemble_stiffness_matrix(nodes, elements, xsections_list, forces, fun_local):
-    ### Change!! - Input forces from output of elastic stiffness analysis (transformed into local coords)
-        ### - Then solve for lambda with Kg_ff and Ke_ff (scipy.linalg.eig(Ke_ff, -Kg_ff)) - lambda_crit = smallest positive eigenvalue
-        ## Part 2: Elastic critical load (eigenvalue); Buckled shape (eigenvector)
-        ## Post processing - internal (interpolated) forces, displacements
     K_full = np.zeros((6*len(nodes), 6*len(nodes)))
     for i, element in enumerate(elements):
         # Calculate stiffness matrix in local coordinates

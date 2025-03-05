@@ -22,7 +22,7 @@ def test_load_frame_simple():
     # Force list (node_id, forces on each DOF)
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
-    (all_disps, all_forces) = load_frame(nodes, elements, xsection, constraints, forces)
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
 
     # Check displacements
     DISPS_MATCH = True
@@ -50,7 +50,7 @@ def test_load_frame_simple():
     print('\nTrue Forces:')
     print(true_forces)
 
-    return DISPS_MATCH and FORCES_MATCH
+    assert DISPS_MATCH and FORCES_MATCH
 
 def test_load_frame_simple_2():
     # Frame geometry definition
@@ -70,7 +70,7 @@ def test_load_frame_simple_2():
     # Force list (node_id, forces on each DOF)
     forces = [[1, 0.05, 0.05, -0.1, 0, 0, 0], [2, 0, 0, 0, -0.1, -0.1, 0.3]]
 
-    (all_disps, all_forces) = load_frame(nodes, elements, xsection, constraints, forces)
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
 
     # Check displacements
     DISPS_MATCH = True
@@ -102,6 +102,28 @@ def test_load_frame_simple_2():
     print('\nTrue Forces:')
     print(true_forces)
 
-    return DISPS_MATCH and FORCES_MATCH
+    assert DISPS_MATCH and FORCES_MATCH
 
-print(test_load_frame_simple_2())
+def test_critical_load():
+    # Frame geometry definition
+    nodes = np.array([[0,0,0,0,0,0], [30,40,0,0,0,0]])
+    elements = [[0,1,0,[]]]
+
+    # Cross section list
+    E = 1000
+    r = 1
+    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
+    v = .3
+    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,1,1,1,1,1,1]]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[1, -3/5, -4/5, 0, 0, 0, 0]]
+
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    true_crit_factor = .7809879011060754
+    CRIT_FACTORS_MATCH = abs(crit_factor - true_crit_factor) < 10**-6
+    
+    assert CRIT_FACTORS_MATCH

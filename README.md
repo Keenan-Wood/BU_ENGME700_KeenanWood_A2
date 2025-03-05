@@ -7,9 +7,9 @@
 [![codecov](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1/graph/badge.svg?token=p5DMvJ6byO)](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1)
 [![tests](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions/workflows/tests.yml/badge.svg)](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions)
 
-## Apologies, the code has not been successfully tested yet for part 2
+## Apologies, the plotting functionallity for part 2 is still untested
 ### Please see the example below (under Core Implementation) for how a problem should be set up, and how applying a load should be done
-### Advice on code (see functions in StructuralFrame_2.py) is very appreciated - thanks!
+### Advice on interpolating displacement (see functions in StructuralFrame_2.py) is very appreciated - thanks!
 ---
 
 <details>
@@ -68,7 +68,7 @@ Here is an example of how to setup and apply a load to a frame.
 This example corresponds to the first one presented in "Assignment 2 - Code Review 1 - Example Problems":
 ![image](A2_ex1.png)
 
-    # Frame geometry definition
+     # Frame geometry definition
     nodes = np.array([[0,0,10,0,0,0], [15,0,10,0,0,0], [15,0,0,0,0,0]])
     zvec = np.array([[0,0,1], [1,0,0]])
     elements = [[0,1,0,zvec[0,:]], [1,2,0,zvec[1,:]]]
@@ -86,11 +86,11 @@ This example corresponds to the first one presented in "Assignment 2 - Code Revi
     # Force list (node_id, forces on each DOF)
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
-    (all_disps, all_forces) = load_frame(nodes, elements, xsection, constraints, forces)
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
 
 ##### 2. 
 
-This example corresponds to the second example presented in "Assignment 2 - Code Review 1 - Example Problems":
+This example corresponds to the first example presented in "Assignment 2 - Code Review 1 - Example Problems":
 ![image](A2_ex2.png)
 
     # Frame geometry definition
@@ -100,7 +100,7 @@ This example corresponds to the second example presented in "Assignment 2 - Code
     # Cross section list
     E = 500
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2, np.pi*r**4/2)
+    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
     v = .3
     xsection = [[E, A, I_y, I_z, I_p, J, v]]
 
@@ -110,7 +110,31 @@ This example corresponds to the second example presented in "Assignment 2 - Code
     # Force list (node_id, forces on each DOF)
     forces = [[1, 0.05, 0.05, -0.1, 0, 0, 0], [2, 0, 0, 0, -0.1, -0.1, 0.3]]
 
-    (all_disps, all_forces) = load_frame(nodes, elements, xsection, constraints, forces)
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+
+#### 3.
+
+This example corresponds to the first example presented in "Assignment_2_Code_Review_Part_2_.pdf":
+![image](A2_ex3.png)
+
+    # Frame geometry definition
+    nodes = np.array([[0,0,0,0,0,0], [30,40,0,0,0,0]])
+    elements = [[0,1,0,[]]]
+
+    # Cross section list
+    E = 1000
+    r = 1
+    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
+    v = .3
+    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,1,1,1,1,1,1]]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[1, -3/5, -4/5, 0, 0, 0, 0]]
+
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
 
 ---
 
