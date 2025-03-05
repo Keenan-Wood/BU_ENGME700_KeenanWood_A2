@@ -59,25 +59,25 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
 *(all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)*
 
 Inputs:
-1. nodes - 2D numpy array of node coordinates (#Nodes x 6)
-    ie. for two nodes n0 and n1:
-    nodes = np.array([[n0x, n0y, n0z, n0tx, n0ty, n0tz], [n1x, n1y, n1z, n1tx, n1ty, n1tz]])
-    where tx, ty, and tz represent the angular coordinates of the nodes (typically 0 to start)
+1. nodes - 2D numpy array of node coordinates (#Nodes x 6)  
+    ie. for two nodes n0 and n1:  
+    nodes = np.array([[n0x, n0y, n0z, n0tx, n0ty, n0tz], [n1x, n1y, n1z, n1tx, n1ty, n1tz]])  
+    where tx, ty, and tz represent the angular coordinates of the nodes (typically 0 to start)  
 
-2. elements - nested list containing element information (#Elements x 4)
-    ie. for two elements el0 and el1:
-    elements = [[el0_node_a_id, el0_node_b_id, el0_section_id, el0_zvec], [el1_node_a_id, el1_node_b_id, el1_section_id, el1_zvec]]
+2. elements - nested list containing element information (#Elements x 4)  
+    ie. for two elements el0 and el1:  
+    elements = [[el0_node_a_id, el0_node_b_id, el0_section_id, el0_zvec], [el1_node_a_id, el1_node_b_id, el1_section_id, el1_zvec]]  
 
-3. xsection - nested list of section properties (#Different Sections x 7)
-    xsection = [[E, A, I_y, I_z, I_rho, J, nu]] creates a section with ID 0 with the given properties
+3. xsection - nested list of section properties (#Different Sections x 7)  
+    xsection = [[E, A, I_y, I_z, I_rho, J, nu]] creates a section with ID 0 with the given properties  
 
-4. constraints - nested list of fixed DOF (#Constrained Nodes x 7)
-    ie. for node 0 with fixed z, node 3 completely fixed, and node 4 pinned:
+4. constraints - nested list of fixed DOF (#Constrained Nodes x 7)  
+    ie. for node 0 with fixed z, node 3 completely fixed, and node 4 pinned:  
     constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
 
-5. forces - nested list of forces on each DOF for indicated nodes (#Forced Nodes x 7)
-    ie. forces and moments applied to node 1:
-    forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
+5. forces - nested list of forces on each DOF for indicated nodes (#Forced Nodes x 7)  
+    ie. forces and moments applied to node 1:  
+    forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]  
 
 ---
 
