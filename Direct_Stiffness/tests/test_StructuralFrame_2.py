@@ -127,3 +127,7 @@ def test_critical_load():
     CRIT_FACTORS_MATCH = abs(crit_factor - true_crit_factor) < 10**-6
     
     assert CRIT_FACTORS_MATCH
+
+test_load_frame_simple()
+test_load_frame_simple_2()
+test_critical_load()

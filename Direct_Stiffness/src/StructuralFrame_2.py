@@ -34,11 +34,12 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
     forces_vec[fixed_ind] = support_forces
 
     # Calculate element forces
+    f_N = lambda x, L: np.array([1 - (x/L)**2*(3 - 2*x/L), x*(1 - x/L)**2, (x/L)**2*(3 - 2*x/L), x**2/L*(x/L - 1)])
+    f_v = lambda x, L, vec: np.matmul(f_N(x, L), vec)
     ax = plt.figure().add_subplot(projection='3d')
-    (plt_x, plt_y, plt_z) = ([], [], [])
     (el_disps, el_forces) = (np.zeros((N_elements, 12)), np.zeros((N_elements, 12)))
     for i, element in enumerate(elements):
-        x_vec = nodes[element[1], 0:3] - nodes[element[0], 0:3]
+        x_vec = (nodes[element[1], 0:3] - nodes[element[0], 0:3]) / element[4]
         gam_full = calc_transformation_matrix(x_vec, element[3])
         el_disp = np.hstack((disps[element[0],:], disps[element[1],:]))
         el_disps[i,:] = np.matmul(gam_full, el_disp)
@@ -46,17 +47,18 @@ def load_frame(nodes: np.array, elements: list, xsections_list: list, constraint
         el_forces[i,:] = np.matmul(el_Ke, el_disps[i,:])
 
         # Plot interpolated element displacement using shape functions
-        f_N = lambda x, L: np.array([1 - (x/L)**2*(3 - 2*x/L), x*(1 - x/L)**2, (x/L)**2*(3 - 2*x/L), x**2/L*(x/L - 1)])
-        f_v = lambda x, L, vec: np.matmul(f_N(x, L), vec)
-        el_x = np.linspace(0, element[4], 30)
-        el_y = np.array([f_v(x, element[4], el_disps[i,[1,5,6,11]]) for x in el_x])
-        el_z = np.array([f_v(x, element[4], el_disps[i,[2,4,7,10]]) for x in el_x])
-        y_vec = np.cross(x_vec, element[3])
-        plt_x.extend(el_x*x_vec[0] + el_y*y_vec[0] + el_z*element[3][0])
-        plt_y.extend(el_x*x_vec[1] + el_y*y_vec[1] + el_z*element[3][1])
-        plt_z.extend(el_x*x_vec[2] + el_y*y_vec[2] + el_z*element[3][2])
-    
-    ax.plot(plt_x, plt_y, plt_z)
+        L = np.linalg.norm(nodes[element[1], 0:3] + disps[element[0], 0:3] - nodes[element[0], 0:3] - disps[element[1], 0:3])
+        z_vec = element[3]/np.linalg.norm(element[3])
+        el_x = np.linspace(0, L, 30)
+        el_dx = np.linspace(el_disps[i,0], el_disps[i,6], 30)
+        el_dy = np.array([f_v(x, L, el_disps[i,[1,5,7,11]]) for x in el_x])
+        el_dz = np.array([f_v(x, L, el_disps[i,[2,4,8,10]]) for x in el_x])
+        y_vec = np.cross(z_vec, x_vec)
+        el_x0 = np.linspace(0, L, 30)
+        plt_x = nodes[element[0], 0] + (el_x0 + el_dx)*x_vec[0] + el_dy*y_vec[0] + el_dz*z_vec[0]
+        plt_y = nodes[element[0], 1] + (el_x0 + el_dx)*x_vec[1] + el_dy*y_vec[1] + el_dz*z_vec[1]
+        plt_z = nodes[element[0], 2] + (el_x0 + el_dx)*x_vec[2] + el_dy*y_vec[2] + el_dz*z_vec[2]
+        ax.plot(plt_x, plt_y, plt_z)
     plt.show()
 
     # Assemble and Partition geometric stiffness matrix; Calculate critical load factor and vector

@@ -5,6 +5,31 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
 from StructuralFrame_2 import load_frame
 
 # %%
+
+# Example 1 - Test
+def test_load_frame_simple():
+    # Frame geometry definition
+    nodes = np.array([[0,0,5,0,0,0], [-5,0,10,0,0,0], [5,0,10,0,0,0], [0,5,10,0,0,0], [0,-5,10,0,0,0]])
+    elements = [[0,i,0,[]] for i in [1,2,3,4]]
+
+    # Cross section list
+    E = 1000
+    (b, h) = (.5, 1)
+    (A, I_y, I_z, I_p, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12, .02861)
+    v = .3
+    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[i,1,1,1,1,1,1] for i in [1,2,3,4]]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[0, -1, -1, -1, 0, 0, 0]]
+
+    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+
+test_load_frame_simple()
+
+# %%
 # Problem 1 and 2
 def solve_problem_1_2():
     # Frame geometry definition
@@ -94,4 +119,3 @@ def solve_problem_3():
     print(crit_factor)
 
 solve_problem_3()
-# %%
