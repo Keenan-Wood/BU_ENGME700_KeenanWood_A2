@@ -1,4 +1,5 @@
 # %%
+#%matplotlib ipympl
 import numpy as np
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
@@ -26,7 +27,7 @@ def test_load_frame_simple():
     forces = [[0, -1, -1, -1, 0, 0, 0]]
 
     N_pts = 30
-    (all_disps, all_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
     sf.plot_frame(inter_coords, elements)
 
 test_load_frame_simple()
@@ -53,7 +54,8 @@ def solve_problem_1_2():
     forces = [[6, 0.05, -0.1, 0.23, 0.1, -0.025, -0.08]]
 
     N_pts = 30
-    (all_disps, all_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
+    sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
     sf.plot_frame(inter_coords, elements)
 
     # Display Problem 1 results
@@ -79,7 +81,7 @@ def solve_problem_1_2():
     Fz = -37*P/L
     forces_2 = [[6, Fx, Fy, Fz, 0, 0, 0]]
 
-    (all_disps_2, all_forces_2, inter_coords_2, crit_factor_2, crit_vec_2) = sf.load_frame(nodes, elements, xsection, constraints, forces_2, N_pts)
+    (all_disps_2, all_forces_2, el_disps_2, el_forces_2, inter_coords_2, crit_factor_2, crit_vec_2) = sf.load_frame(nodes, elements, xsection, constraints, forces_2, N_pts)
     sf.plot_frame(inter_coords, elements)
 
     # Display Problem 2 Result
@@ -117,7 +119,7 @@ def solve_problem_3():
     forces = [[i,0,0,-1,0,0,0] for i in range(8,12)]
 
     N_pts = 30
-    (all_disps, all_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
     sf.plot_frame(inter_coords, elements)
 
     # Display Problem 3 Result
