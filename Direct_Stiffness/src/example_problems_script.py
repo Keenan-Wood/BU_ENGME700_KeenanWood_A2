@@ -7,11 +7,11 @@ import StructuralFrame_2 as sf
 
 # %%
 
-# Example 1 - Test
-def test_load_frame_simple():
+# Example 1 - Part 1 Code Review 1
+def solve_CR1_P1_ex1():
     # Frame geometry definition
-    nodes = np.array([[0,0,5,0,0,0], [-5,0,10,0,0,0], [5,0,10,0,0,0], [0,5,10,0,0,0], [0,-5,10,0,0,0]])
-    elements = [[0,i,0,[]] for i in [1,2,3,4]]
+    nodes = np.array([[0,0,10], [15,0,10], [15,0,0]])
+    elements = [[0, 1, 0, [0,0,1]], [1, 2, 0, [1,0,0]]]
 
     # Cross section list
     E = 1000
@@ -21,20 +21,49 @@ def test_load_frame_simple():
     xsection = [[E, A, I_y, I_z, I_p, J, v]]
 
     # Constraint list (node_id, fixed DOF)
-    constraints = [[i,1,1,1,1,1,1] for i in [1,2,3,4]]
+    constraints = [[0,1,1,1,1,1,1], [2,1,1,1,0,0,0]]
 
     # Force list (node_id, forces on each DOF)
-    forces = [[0, -1, -1, -1, 0, 0, 0]]
+    forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
     N_pts = 30
     (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
-    sf.plot_frame(inter_coords, elements)
+    sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    #sf.plot_frame(inter_coords, elements)
 
-test_load_frame_simple()
+solve_CR1_P1_ex1()
 
 # %%
-# Problem 1 and 2
-def solve_problem_1_2():
+
+# Example 2 - Part 1 Code Review 1
+def solve_CR1_P1_ex2():
+    # Frame geometry definition
+    nodes = np.array([[0,0,0], [-5,1,10], [-1,5,13], [-3,7,11], [6,9,5]])
+    elements = [[0,1,0,[]], [1,2,0,[]], [2,3,0,[]], [2,4,0,[]]]
+
+    # Cross section list
+    E = 500
+    r = 1
+    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
+    v = 0.3
+    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[1, 0.05, 0.05, -0.1, -0.05, 0.1, -0.25]]
+#############
+    N_pts = 30
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
+    sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    #sf.plot_frame(inter_coords, elements)
+
+solve_CR1_P1_ex2()
+
+# %%
+# Problem 1 and 2 - Technical Correctness 1
+def solve_T1_problem_1_2():
     # Frame geometry definition
     (x, y, z) = (np.linspace(0, 25, 7), np.linspace(0, 50, 7), np.linspace(0, 37, 7))
     nodes = np.array([np.array([x[i], y[i], z[i], 0, 0, 0]) for i in range(0, 7)])
@@ -89,11 +118,11 @@ def solve_problem_1_2():
     print("Critical Load Factor:")
     print(crit_factor_2)
 
-solve_problem_1_2()
+solve_T1_problem_1_2()
 
 # %%
-# Problem 3
-def solve_problem_3():
+# Problem 3 - Technical Correctness 1
+def solve_T1_problem_3():
     # Frame geometry definition
     (L1, L2, L3, L4) = (11, 23, 15, 13)
     x = [0, L1, L1, 0, 0, L1, L1, 0, 0, L1, L1, 0]
@@ -127,5 +156,5 @@ def solve_problem_3():
     print("Critical Load Factor:")
     print(crit_factor)
 
-solve_problem_3()
+solve_T1_problem_3()
 # %%
