@@ -7,7 +7,7 @@ import copy as cp
 def load_frame(nodes: np.array, elements_in: list, xsections: list, constraint_list: list = [[]], applied_forces: list = [[]], N_pts: int = 10):
     elements = cp.deepcopy(elements_in)
     (N_nodes, N_elements) = (len(nodes), len(elements))
-    if np.size(nodes, 1) < 6: nodes = np.hstack((nodes, np.zeros(N_nodes, 6 - np.size(nodes, 1))))
+    if np.size(nodes, 1) < 6: nodes = np.hstack((nodes, np.zeros((N_nodes, 6 - np.size(nodes, 1)))))
 
     # Build constraint and force arrays
     (constrained_dof, forces) = (np.zeros((N_nodes, 6)), np.zeros((N_nodes, 6)))

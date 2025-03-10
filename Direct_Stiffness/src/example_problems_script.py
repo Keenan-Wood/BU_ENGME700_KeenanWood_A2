@@ -4,6 +4,7 @@ import numpy as np
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
 import StructuralFrame_2 as sf
+from StructuralFrame_3 import *
 
 # %%
 
@@ -30,6 +31,16 @@ def solve_CR1_P1_ex1():
     (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
     sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
     #sf.plot_frame(inter_coords, elements)
+
+    # Test StructuralFrame_3
+    N_pts = 30
+    xsection = [[E, v]]
+    elements = [[0, 1, 0, [0,0,1]], [1, 2, 0]]
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.xsecs[0].make_rectangular(b, h, J)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    simple_frame.plot_deformed(inter_coords)
 
 solve_CR1_P1_ex1()
 
