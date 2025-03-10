@@ -25,8 +25,8 @@ def solve_CR1_P1_ex1():
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
     # Create frame, apply loads, and display results
-    N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
     print("\nCode Review 1 - Problem 1:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
@@ -49,8 +49,8 @@ def solve_CR1_P1_ex2():
     forces = [[1, 0.05, 0.05, -0.1, -0.05, 0.1, -0.25]]
 
     # Create frame, apply loads, and display results
-    N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
     print("\nCode Review 1 - Problem 2:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
@@ -74,8 +74,8 @@ def solve_T1_problem_1_2():
     forces = [[6, 0.05, -0.1, 0.23, 0.1, -0.025, -0.08]]
 
     # Create frame, apply loads, and display results
-    N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
     print("\nTechnical Correctness 1 - Problem 1:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
@@ -88,7 +88,7 @@ def solve_T1_problem_1_2():
 
     # Create frame, apply loads, and display results
     
-    simple_frame.apply_load(forces_2, N_pts)
+    simple_frame.apply_load(forces_2, 30)
     print("\nTechnical Correctness 1 - Problem 2:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
@@ -117,8 +117,8 @@ def solve_T1_problem_3():
     forces = [[i,0,0,-1,0,0,0] for i in range(8,12)]
 
     # Create frame, apply loads, and display results
-    N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
     print("\nTechnical Correctness 1 - Problem 3:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
@@ -128,3 +128,4 @@ solve_CR1_P1_ex1()
 solve_CR1_P1_ex2()
 solve_T1_problem_1_2()
 solve_T1_problem_3()
+# %%

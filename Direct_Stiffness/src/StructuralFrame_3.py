@@ -30,8 +30,7 @@ class frame:
         x = np.outer(np.linspace(0,1,N_pts), L)
         L = np.outer(np.ones(N_pts), L)
         shape_mat = np.array([1 - (x/L)**2*(3 - 2*x/L), x*(1 - x/L)**2, (x/L)**2*(3 - 2*x/L), x**2/L*(x/L - 1)])
-        shape_mat = np.permute_dims(shape_mat, (1, 2, 0))
-        return shape_mat
+        return np.permute_dims(shape_mat, (1, 2, 0))
 
     def apply_load(self, applied_forces: list, N_pts: int = 10):
         #Build force array
@@ -86,20 +85,21 @@ class frame:
 
     def print_deformed_results(self):
         (disps, forces, el_disps, el_forces, crit_load_vec) = tuple([self.deformation[key] for key in ["disps", "forces", "el_disps", "el_forces", "crit_load_vec"]])
-        (res_nodes, res_nodes_geo, res_elements) = (Texttable(), Texttable(), Texttable())
-        
+        (res_nodes, res_nodes_geo, res_elements) = (Texttable(max_width=0), Texttable(max_width=0), Texttable(max_width=0))
         print('Node Displacements and Forces')
         res_nodes.set_precision(8)
+        res_nodes.set_cols_align(["c" for node in self.nodes])
         res_nodes.add_rows([['Node'] + [str(i) for i in range(0,len(disps))],
                     ['x'] + list(disps[:,0]), ['y'] + list(disps[:,1]), ['z'] + list(disps[:,2]),
                     [chr(952) + 'x'] + list(disps[:,3]), [chr(952) + 'y'] + list(disps[:,4]), [chr(952) + 'z'] + list(disps[:,5]),
                     ['Fx'] + list(forces[:,0]), ['Fy'] + list(forces[:,1]), ['Fz'] + list(forces[:,2]),
                     ['Mx'] + list(forces[:,3]), ['My'] + list(forces[:,4]), ['Mz'] + list(forces[:,5])])
         print(res_nodes.draw())
-
+        
         print('\nCritical Load Factor: ' + str(self.deformation["crit_load_factor"]))
         print('Critical Load Vector')
         res_nodes_geo.set_precision(8)
+        res_nodes_geo.set_cols_align(["c" for node in self.nodes])
         res_nodes_geo.add_rows([['Node'] + [str(i) for i in range(0,len(disps))],
                     ['eig_x'] + list(crit_load_vec[:,0]), ['eig_y'] + list(crit_load_vec[:,1]), ['eig_z'] + list(crit_load_vec[:,2]),
                     ['eig_' + chr(952) + 'x'] + list(crit_load_vec[:,3]), ['eig_' + chr(952) + 'y'] + list(crit_load_vec[:,4]), ['eig_' + chr(952) + 'z'] + list(crit_load_vec[:,5])])
@@ -107,6 +107,7 @@ class frame:
 
         print('\nLocal Coordinate Displacements and Internal Forces')
         res_elements.set_precision(8)
+        res_elements.set_cols_align(["c" for el in self.elements])
         res_elements.add_rows([['Element'] + [str(i) for i in range(0,len(el_disps))],
                     ['dx'] + list(el_disps[:,0]), ['dy'] + list(el_disps[:,1]), ['dz'] + list(el_disps[:,2]),
                     [chr(952) + 'x'] + list(el_disps[:,3]), [chr(952) + 'y'] + list(el_disps[:,4]), [chr(952) + 'z'] + list(el_disps[:,5]),
@@ -119,7 +120,7 @@ class frame:
         ax = plt.figure().add_subplot(projection='3d')
         clrs = ['b', 'g', 'r', 'm', 'k']
         for i, el in enumerate(self.elements): 
-            ax.plot(inter_coords[:, i, 0], inter_coords[:, i, 1], inter_coords[:, i, 2], color=clrs[el.xsec.id % len(clrs)])
+            ax.plot(inter_coords[:,i,0], inter_coords[:,i,1], inter_coords[:,i,2], color=clrs[el.xsec.id % len(clrs)])
         plt.show()
 
 class element:
