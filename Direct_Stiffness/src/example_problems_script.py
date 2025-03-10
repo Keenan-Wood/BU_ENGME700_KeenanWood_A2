@@ -26,11 +26,10 @@ def solve_CR1_P1_ex1():
 
     # Create frame, apply loads, and display results
     N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints)
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
     print("\nCode Review 1 - Problem 1:\n")
-    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    simple_frame.plot_deformed(inter_coords)
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
 
 # Example 2 - Part 1 Code Review 1
 def solve_CR1_P1_ex2():
@@ -51,11 +50,10 @@ def solve_CR1_P1_ex2():
 
     # Create frame, apply loads, and display results
     N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints)
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
     print("\nCode Review 1 - Problem 2:\n")
-    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    simple_frame.plot_deformed(inter_coords)
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
 
 # Problem 1 and 2 - Technical Correctness 1
 def solve_T1_problem_1_2():
@@ -77,11 +75,10 @@ def solve_T1_problem_1_2():
 
     # Create frame, apply loads, and display results
     N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints)
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
     print("\nTechnical Correctness 1 - Problem 1:\n")
-    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    simple_frame.plot_deformed(inter_coords)
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
 
     # Problem 2 - Force list (node_id, forces on each DOF)
     P = 1
@@ -90,10 +87,11 @@ def solve_T1_problem_1_2():
     forces_2 = [[6, Fx, Fy, Fz, 0, 0, 0]]
 
     # Create frame, apply loads, and display results
-    (all_disps_2, all_forces_2, el_disps_2, el_forces_2, inter_coords_2, crit_factor_2, crit_vec_2) = simple_frame.load_frame(forces_2, N_pts)
+    
+    simple_frame.apply_load(forces_2, N_pts)
     print("\nTechnical Correctness 1 - Problem 2:\n")
-    simple_frame.print_deformed_results(all_disps_2, all_forces_2, el_disps_2, el_forces_2, crit_factor_2, crit_vec_2)
-    simple_frame.plot_deformed(inter_coords_2)
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
 
 # Problem 3 - Technical Correctness 1
 def solve_T1_problem_3():
@@ -120,11 +118,10 @@ def solve_T1_problem_3():
 
     # Create frame, apply loads, and display results
     N_pts = 30
-    simple_frame = frame(nodes, xsection, elements, constraints)
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    simple_frame = frame(nodes, xsection, elements, constraints).apply_load(forces, N_pts)
     print("\nTechnical Correctness 1 - Problem 3:\n")
-    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    simple_frame.plot_deformed(inter_coords)
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
 
 # %%
 solve_CR1_P1_ex1()
