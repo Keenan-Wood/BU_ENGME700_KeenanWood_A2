@@ -3,11 +3,10 @@
 import numpy as np
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
-import StructuralFrame_2 as sf
 from StructuralFrame_3 import *
 
+# Functions defining each problem, running solver, and printing/plotting results
 # %%
-
 # Example 1 - Part 1 Code Review 1
 def solve_CR1_P1_ex1():
     # Frame geometry definition
@@ -15,11 +14,9 @@ def solve_CR1_P1_ex1():
     elements = [[0, 1, 0, [0,0,1]], [1, 2, 0, [1,0,0]]]
 
     # Cross section list
-    E = 1000
-    (b, h) = (.5, 1)
-    (A, I_y, I_z, I_p, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12, .02861)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    (E, v) = (1000, 0.3)
+    (b, h, J) = (.5, 1, 0.02861)
+    xsection = [[E, v, 'rectangle', [b, h, J]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1], [2,1,1,1,0,0,0]]
@@ -27,24 +24,13 @@ def solve_CR1_P1_ex1():
     # Force list (node_id, forces on each DOF)
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
+    # Create frame, apply loads, and display results
     N_pts = 30
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
-    sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    #sf.plot_frame(inter_coords, elements)
-
-    # Test StructuralFrame_3
-    N_pts = 30
-    xsection = [[E, v]]
-    elements = [[0, 1, 0, [0,0,1]], [1, 2, 0]]
     simple_frame = frame(nodes, xsection, elements, constraints)
-    simple_frame.xsecs[0].make_rectangular(b, h, J)
     (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
-    print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    print("\nCode Review 1 - Problem 1:\n")
+    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
     simple_frame.plot_deformed(inter_coords)
-
-solve_CR1_P1_ex1()
-
-# %%
 
 # Example 2 - Part 1 Code Review 1
 def solve_CR1_P1_ex2():
@@ -53,26 +39,24 @@ def solve_CR1_P1_ex2():
     elements = [[0,1,0,[]], [1,2,0,[]], [2,3,0,[]], [2,4,0,[]]]
 
     # Cross section list
-    E = 500
+    (E, v) = (500, 0.3)
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    v = 0.3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    xsection = [[E, v, 'circle', [r]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
 
     # Force list (node_id, forces on each DOF)
     forces = [[1, 0.05, 0.05, -0.1, -0.05, 0.1, -0.25]]
-#############
+
+    # Create frame, apply loads, and display results
     N_pts = 30
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
-    sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    #sf.plot_frame(inter_coords, elements)
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    print("\nCode Review 1 - Problem 2:\n")
+    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    simple_frame.plot_deformed(inter_coords)
 
-solve_CR1_P1_ex2()
-
-# %%
 # Problem 1 and 2 - Technical Correctness 1
 def solve_T1_problem_1_2():
     # Frame geometry definition
@@ -81,11 +65,9 @@ def solve_T1_problem_1_2():
     elements = [[i, i+1, 0, []] for i in range(0, 6)]
 
     # Cross section list
-    E = 10000
+    (E, v) = (10000, 0.3)
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    xsection = [[E, v, 'circle', [r]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1]]
@@ -93,45 +75,26 @@ def solve_T1_problem_1_2():
     # Problem 1 - Force list (node_id, forces on each DOF)
     forces = [[6, 0.05, -0.1, 0.23, 0.1, -0.025, -0.08]]
 
+    # Create frame, apply loads, and display results
     N_pts = 30
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
-    sf.print_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
-    sf.plot_frame(inter_coords, elements)
-
-    # Display Problem 1 results
-    print("\nProblem 1:\n")
-    print("Reaction force at Node 0:")
-    print(all_forces[0, 0:3])
-    print("Reaction moment at Node 0:")
-    print(all_forces[0, 3:6])
-    print("Displacement at Node 3:")
-    print(all_disps[3, 0:3])
-    print("Rotation at Node 3:")
-    print(all_disps[3, 3:6])
-    print("Displacement at Node 6:")
-    print(all_disps[6, 0:3])
-    print("Rotation at Node 6:")
-    print(all_disps[6, 3:6])
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    print("\nTechnical Correctness 1 - Problem 1:\n")
+    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    simple_frame.plot_deformed(inter_coords)
 
     # Problem 2 - Force list (node_id, forces on each DOF)
     P = 1
     L = np.linalg.norm(np.array([25, 50, 37]))
-    Fx = -25*P/L
-    Fy = -50*P/L
-    Fz = -37*P/L
+    (Fx, Fy, Fz) = (-25*P/L, -50*P/L, -37*P/L)
     forces_2 = [[6, Fx, Fy, Fz, 0, 0, 0]]
 
-    (all_disps_2, all_forces_2, el_disps_2, el_forces_2, inter_coords_2, crit_factor_2, crit_vec_2) = sf.load_frame(nodes, elements, xsection, constraints, forces_2, N_pts)
-    sf.plot_frame(inter_coords, elements)
+    # Create frame, apply loads, and display results
+    (all_disps_2, all_forces_2, el_disps_2, el_forces_2, inter_coords_2, crit_factor_2, crit_vec_2) = simple_frame.load_frame(forces_2, N_pts)
+    print("\nTechnical Correctness 1 - Problem 2:\n")
+    simple_frame.print_deformed_results(all_disps_2, all_forces_2, el_disps_2, el_forces_2, crit_factor_2, crit_vec_2)
+    simple_frame.plot_deformed(inter_coords_2)
 
-    # Display Problem 2 Result
-    print("\nProblem 2:\n")
-    print("Critical Load Factor:")
-    print(crit_factor_2)
-
-solve_T1_problem_1_2()
-
-# %%
 # Problem 3 - Technical Correctness 1
 def solve_T1_problem_3():
     # Frame geometry definition
@@ -145,12 +108,9 @@ def solve_T1_problem_3():
     elements.extend([4*lvl + i, 4*lvl + (i+1)%4, 1, z_vec2] for i in range(0, 4) for lvl in [1,2])
 
     # Cross section list
-    (E1, E2) = (10000, 50000)
-    (r, b, h) = (1, 0.5, 1)
-    (v1, v2) = (0.3, 0.3)
-    (A1, I_y1, I_z1, I_p1, J1) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    (A2, I_y2, I_z2, I_p2, J2) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2 + h**2)/12, 0.028610026041666667)
-    xsection = [[E1, A1, I_y1, I_z1, I_p1, J1, v1], [E2, A2, I_y2, I_z2, I_p2, J2, v2]]
+    (E1, v1, E2, v2) = (10000, 0.3, 50000, 0.3)
+    (r, b, h, J2) = (1, 0.5, 1, 0.028610026041666667)
+    xsection = [[E1, v1, 'circle', [r]], [E2, v2, 'rectangle', [b, h, J2]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[i,1,1,1,1,1,1] for i in range(0,4)]
@@ -158,14 +118,16 @@ def solve_T1_problem_3():
     # Force list (node_id, forces on each DOF)
     forces = [[i,0,0,-1,0,0,0] for i in range(8,12)]
 
+    # Create frame, apply loads, and display results
     N_pts = 30
-    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = sf.load_frame(nodes, elements, xsection, constraints, forces, N_pts)
-    sf.plot_frame(inter_coords, elements)
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    (all_disps, all_forces, el_disps, el_forces, inter_coords, crit_factor, crit_vec) = simple_frame.load_frame(forces, N_pts)
+    print("\nTechnical Correctness 1 - Problem 3:\n")
+    simple_frame.print_deformed_results(all_disps, all_forces, el_disps, el_forces, crit_factor, crit_vec)
+    simple_frame.plot_deformed(inter_coords)
 
-    # Display Problem 3 Result
-    print("\nProblem 3:\n")
-    print("Critical Load Factor:")
-    print(crit_factor)
-
-solve_T1_problem_3()
 # %%
+solve_CR1_P1_ex1()
+solve_CR1_P1_ex2()
+solve_T1_problem_1_2()
+solve_T1_problem_3()
