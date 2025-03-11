@@ -179,10 +179,10 @@ def solve_T1_problem_3():
 
 # %%
 # Example Problems
-#solve_CR1_ex1()
-#solve_CR1_ex2()
-#solve_CR2_ex1()
-#solve_CR2_ex2()
+solve_CR1_ex1()
+solve_CR1_ex2()
+solve_CR2_ex1()
+solve_CR2_ex2()
 solve_T1_problem_1_2()
 solve_T1_problem_3()
 # %%
