@@ -93,10 +93,36 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
         # Plots the deformed frame with a different color for each cross section  
         # Setting disp_type to "buckled" plots the primary buckling mode shape instead of the displacement due to the applied load  
 
-**Element Class**
+**Element Class**  
 
+    def __init__(self, parent_frame, node_a: int, node_b: int, xsec = 0, z_vec = []):  
+    Inputs:  
+    1. parent_frame - The frame instance that the element belongs to  
+    2. node_a, node_b - The endpoints of the element, given as node ids  
+    4. xsec - The element's cross section, given by its id, its instance, or a set of parameters to create a new instance  
+    5. z_vec - The orientation vector of the element's cross section  
+            - if not provided, assumed to be the normalized vector of cross(x_vec, [1,0,0]) (or cross(x_vec, [0,1,0]), if x_vec is nearly parallel to [1,0,0])  
+    Results:  
+    The element's coordination transformation matrix is assigned to property '.gamma', and its length to '.L' - note: gamma implemented more concisely than in provided math.utils  
+    The element's elastic stiffness matrix is calculated and assigned to property '.Ke_local' in local coordinates, and '.Ke' in global coordinates  
+
+    def calc_elastic_stiffness(self):  
+        # Calculate elastic stiffness matrix - note: A more concise version than in provided math.utils  
+
+    def calc_geometric_stiffness(self, forces: np.array):  
+        # Calculate geometric stiffness matrix - note: A more concise version than in provided math.utils  
 
 **XSection Class**
+
+    def __init__(self, id: int, E: float, v: float, geometry_type: str, geometry_parameters: list):  
+    Inputs:  
+    1. id - a unique integer for the cross section (within a given frame)
+    2. E - the modulus of elasticity
+    3. v - nu
+    4. geometry_type, geometry_parameters - the cross section shape and defining parameters
+            - "circle", [radius]
+            - "rectangle", [base, height, J (optional)]
+            - other, [Area, I_y, I_z, I_rho, J]
 
 
 
