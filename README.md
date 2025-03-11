@@ -261,9 +261,6 @@ This example corresponds to the second example presented in "Assignment_2_Code_R
     divided_frame.print_deformed_results()
     divided_frame.plot_deformed("buckled")
 
-*Output: 
-![image](A2_ex4_outD.png)
-
 #### 5.
 
 This example corresponds to the first and second problem presented in "Assignment_2_Final_Code_Review.pdf":
@@ -337,6 +334,9 @@ This example corresponds to the third problem presented in "Assignment_2_Final_C
     print("\nTechnical Correctness 1 - Problem 3:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed("buckled")
+
+*Output: 
+![image](A2_ex6_outD.png)
 
 ---
 
