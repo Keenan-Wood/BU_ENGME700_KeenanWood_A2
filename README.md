@@ -25,14 +25,14 @@ conda create --name me700-env python=3.12
 conda activate me700-env
 ```
 
-Navigate to the project directory (./Part_1) and create an editable install of the code:
+Navigate to the project directory (./DirectStiffness) and create an editable install of the code:
 ```bash
 pip install -e .
 ```
 
 Test that the code is working with pytest:
 ```bash
-pytest -v --cov=newtonmethod --cov-report term-missing
+pytest -v --cov=StructuralFrame_3 --cov-report term-missing
 ```
 
 If you are using VSCode to run this code, don't forget to set VSCode virtual environment to the newly-activated environment.
