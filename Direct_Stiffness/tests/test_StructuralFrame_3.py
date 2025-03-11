@@ -1,6 +1,6 @@
 import numpy as np
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
+#import sys, os
+#sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
 from StructuralFrame_3 import *
 
 def test_load_frame_simple():
@@ -41,16 +41,16 @@ def test_load_frame_simple():
     true_forces[2, 0:3] = np.array([0.00528582, -0.00390168, -0.09526818])
     if np.linalg.norm(all_forces - true_forces) >= 10**-6: FORCES_MATCH = False
 
-    np.set_printoptions(precision=10)
-    np.set_printoptions(suppress=True)
-    print('Calculated Displacement:')
-    print(all_disps)
-    print('\nTrue Displacements:')
-    print(true_disps)
-    print('\nCalculated Forces:')
-    print(all_forces)
-    print('\nTrue Forces:')
-    print(true_forces)
+    #np.set_printoptions(precision=10)
+    #np.set_printoptions(suppress=True)
+    #print('Calculated Displacement:')
+    #print(all_disps)
+    #print('\nTrue Displacements:')
+    #print(true_disps)
+    #print('\nCalculated Forces:')
+    #print(all_forces)
+    #print('\nTrue Forces:')
+    #print(true_forces)
 
     assert DISPS_MATCH and FORCES_MATCH
 
@@ -96,16 +96,16 @@ def test_load_frame_simple_2():
     true_forces[4, 0:3] = np.array([-.01107052, -.02638144, -.02297117])
     if np.linalg.norm(all_forces - true_forces) >= 10**-6: FORCES_MATCH = False
 
-    np.set_printoptions(precision=10)
-    np.set_printoptions(suppress=True)
-    print('Calculated Displacement:')
-    print(all_disps)
-    print('\nTrue Displacements:')
-    print(true_disps)
-    print('\nCalculated Forces:')
-    print(all_forces)
-    print('\nTrue Forces:')
-    print(true_forces)
+    #np.set_printoptions(precision=10)
+    #np.set_printoptions(suppress=True)
+    #print('Calculated Displacement:')
+    #print(all_disps)
+    #print('\nTrue Displacements:')
+    #print(true_disps)
+    #print('\nCalculated Forces:')
+    #print(all_forces)
+    #print('\nTrue Forces:')
+    #print(true_forces)
 
     assert DISPS_MATCH and FORCES_MATCH
 
