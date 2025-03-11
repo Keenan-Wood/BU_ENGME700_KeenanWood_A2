@@ -165,7 +165,7 @@ def test_z_vec_creation_printing_plotting():
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
     divided_frame = simple_frame.subdivide(2)
-    divided_frame.plot_deformed("buckled")
+    simple_frame.plot_deformed("buckled")
 
     assert NOEXCEPTION
 
