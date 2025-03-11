@@ -6,12 +6,12 @@ build-backend = "setuptools.build_meta"
 pythonpath = "src"
 
 [project]
-name = "ElastoPlastic"
+name = "Direct_Stiffness"
 version = "0.0.0"
 authors = [
   { name="Keenan Wood", email="keenanw7@bu.edu" },
 ]
-description = "ElastoPlastic - Predictor-Corrector Implementation"
+description = "Direct Stiffness Method Solver"
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.9"
@@ -31,5 +31,5 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1"
-"Bug Tracker" = "https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/issues"
+"Homepage" = "https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A2"
+"Bug Tracker" = "https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A2/issues"
