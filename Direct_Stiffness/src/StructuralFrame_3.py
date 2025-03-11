@@ -8,8 +8,10 @@ class frame:
         # Build node array, xsection list, element list, and constraint array
         if np.size(nodes, 1) < 6: nodes = np.hstack((nodes, np.zeros((len(nodes), 6 - np.size(nodes, 1)))))
         self.nodes = nodes
-        self.xsecs = [xsection(i, xsec[0], xsec[1], xsec[2], xsec[3]) for i, xsec in enumerate(xsection_list)]
-        self.elements = [element(nodes, el[0], el[1], self.xsecs[el[2]], el[3] if 3 < len(el) else []) for el in element_list]
+        if isinstance(xsection_list[0], xsection): self.xsecs = xsection_list
+        else: self.xsecs = [xsection(*tuple([i] + xsec)) for i, xsec in enumerate(xsection_list)]
+        self.elements = [element(*tuple([self] + el)) for el in element_list]
+        self.constraints = constraints
         self.fixed_dof = np.zeros((len(self.nodes), 6))
         for constraint in constraints: self.fixed_dof[constraint[0]] = constraint[1:7]
 
@@ -32,10 +34,10 @@ class frame:
         shape_mat = np.array([1 - (x/L)**2*(3 - 2*x/L), x*(1 - x/L)**2, (x/L)**2*(3 - 2*x/L), x**2/L*(x/L - 1)])
         return np.permute_dims(shape_mat, (1, 2, 0))
 
-    def apply_load(self, applied_forces: list, N_pts: int = 10):
+    def apply_load(self, applied_forces: list, N_pts: int = 10, scale = 1):
         #Build force array
         forces = np.zeros((len(self.nodes), 6))
-        for force in applied_forces: forces[force[0], :] = force[1:7]
+        for force in applied_forces: forces[force[0], :] = [scale * force[i] for i in range(1,7)]
 
         # Calculate free displacements and support forces; Combine with known displacements and forces
         disps = np.zeros((len(self.nodes), 6))
@@ -45,16 +47,42 @@ class frame:
         disps_vec[self.free_ind] = free_disps
         forces_vec[self.fixed_ind] = support_forces
 
-        # Calculate element displacements and forces
+        # Calculate element displacements and forces; Interpolate displacements
         el_disps = np.array([np.hstack((
             el.gamma @ disps[el.a, 0:3], el.gamma @ disps[el.a, 3:6],
             el.gamma @ disps[el.b, 0:3], el.gamma @ disps[el.b, 3:6]
             )) for el in self.elements])
         el_forces = np.array([el.Ke_local @ el_disps[i, :] for i, el in enumerate(self.elements)])
         self.deformation = {"disps": disps, "forces": forces, "el_disps": el_disps, "el_forces": el_forces}
+        self.deformation["inter_coords"] = self.interpolate_displacements(disps, el_disps, N_pts)
 
+        # Assemble and Partition geometric stiffness matrix
+        Kg = np.zeros((6*len(self.nodes), 6*len(self.nodes)))
+        for i, el in enumerate(self.elements):
+            Kg_global = el.calc_geometric_stiffness(el_forces[i,:])
+            # Add quadrants of global stiffness matrix to full matrix in positions defined by nodes
+            a_rng = np.arange(6*el.a, 6*(el.a + 1))
+            b_rng = np.arange(6*el.b, 6*(el.b + 1))
+            Kg[np.ix_(np.concatenate((a_rng,b_rng)), np.concatenate((a_rng,b_rng)))] += Kg_global
+        Kg_ff = Kg[np.ix_(self.free_ind, self.free_ind)]
+
+        # Calculate critical load factor and vector; Interpolate eigenvector displacements
+        (eig_vals, eig_vects) = sp.linalg.eig(self.Ke_ff, -Kg_ff)
+        crit_ind = np.where(np.real(eig_vals) > 0, np.real(eig_vals), np.inf).argmin()
+        self.deformation["crit_load_factor"] = np.real(eig_vals[crit_ind])
+        crit_load_vec = np.zeros(6*len(self.nodes))
+        crit_load_vec[self.free_ind] = eig_vects[crit_ind, :]
+        eig_vec = crit_load_vec.reshape((len(self.nodes), 6))
+        self.deformation["crit_load_vec"] = eig_vec
+        el_eig_disps = np.array([np.hstack((
+            el.gamma @ eig_vec[el.a, 0:3], el.gamma @ eig_vec[el.a, 3:6],
+            el.gamma @ eig_vec[el.b, 0:3], el.gamma @ eig_vec[el.b, 3:6]
+        )) for el in self.elements])
+        self.deformation["inter_coords_buckled"] = self.interpolate_displacements(eig_vec, el_eig_disps, N_pts)
+    
+    def interpolate_displacements(self, node_disps, el_disps, N_pts):
         # Calculate local interpolated displacements with bending shape functions (and linear axial displacement)
-        el_lengths = np.array([np.linalg.norm(self.nodes[el.b, 0:3] + disps[el.a, 0:3] - self.nodes[el.a, 0:3] - disps[el.b, 0:3]) for el in self.elements])
+        el_lengths = np.array([np.linalg.norm(self.nodes[el.b, 0:3] + node_disps[el.a, 0:3] - self.nodes[el.a, 0:3] - node_disps[el.b, 0:3]) for el in self.elements])
         shapefuncs = self.bending_shape_functions(el_lengths, N_pts)
         el_x = np.linspace(el_disps[:,0], el_lengths + el_disps[:,6], N_pts)
         el_y = np.sum(shapefuncs * el_disps[np.newaxis, :, [1,5,7,11]], axis=2)
@@ -63,32 +91,32 @@ class frame:
         # Transform to global coordinates
         el_gamma = np.array([el.gamma.T for el in self.elements])
         start_coords = np.array([self.nodes[el.a, 0:3] for el in self.elements])
-        self.deformation["inter_coords"] = start_coords[np.newaxis, ...] + np.squeeze(el_gamma[np.newaxis, ...] @ local_coords[..., np.newaxis])
+        return start_coords[np.newaxis, ...] + np.squeeze(el_gamma[np.newaxis, ...] @ local_coords[..., np.newaxis])
 
-        # Assemble and Partition geometric stiffness matrix
-        Kg = np.zeros((6*len(self.nodes), 6*len(self.nodes)))
-        for i, el in enumerate(self.elements):
-            Kg_global = el.geo_local_stiffness(el_forces[i,:])
-            # Add quadrants of global stiffness matrix to full matrix in positions defined by nodes
-            a_rng = np.arange(6*el.a, 6*(el.a + 1))
-            b_rng = np.arange(6*el.b, 6*(el.b + 1))
-            Kg[np.ix_(np.concatenate((a_rng,b_rng)), np.concatenate((a_rng,b_rng)))] += Kg_global
-        Kg_ff = Kg[np.ix_(self.free_ind, self.free_ind)]
-
-        # Calculate critical load factor and vector
-        (eig_vals, eig_vects) = sp.linalg.eig(self.Ke_ff, -Kg_ff)
-        crit_ind = np.where(np.real(eig_vals) > 0, np.real(eig_vals), np.inf).argmin()
-        self.deformation["crit_load_factor"] = np.real(eig_vals[crit_ind])
-        crit_load_vec = np.zeros(6*len(self.nodes))
-        crit_load_vec[self.free_ind] = eig_vects[crit_ind, :]
-        self.deformation["crit_load_vec"] = crit_load_vec.reshape((len(self.nodes), 6))
+    def subdivide(self, N_div: int):
+        N_nodes = len(self.nodes)
+        new_nodes = self.nodes
+        for i_el, el in enumerate(self.elements):
+            for i_div in range(1, N_div):
+                # Append new nodes
+                node_id = N_nodes - 1 + i_div + (N_div - 1)*i_el
+                node_coords = self.nodes[el.a] + i_div/N_div*(self.nodes[el.b] - self.nodes[el.a])
+                new_nodes = np.vstack([new_nodes, node_id + node_coords])
+                # Append new elements
+                (node_a, node_b) = (node_id - 1, node_id)
+                if i_div == 1: node_a = el.a
+                if node_id == N_nodes: new_elements = [[node_a, node_b , el.xsec, el.gamma[2,:]]]
+                else: new_elements.append([node_a, node_b , el.xsec, el.gamma[2,:]])
+            new_elements.append([N_nodes - 1 + (N_div - 1)*(i_el + 1), el.b, el.xsec, el.gamma[2,:]])
+        divided_frame = frame(new_nodes, self.xsecs, new_elements, self.constraints)
+        return divided_frame
 
     def print_deformed_results(self):
         (disps, forces, el_disps, el_forces, crit_load_vec) = tuple([self.deformation[key] for key in ["disps", "forces", "el_disps", "el_forces", "crit_load_vec"]])
         (res_nodes, res_nodes_geo, res_elements) = (Texttable(max_width=0), Texttable(max_width=0), Texttable(max_width=0))
         print('Node Displacements and Forces')
         res_nodes.set_precision(8)
-        res_nodes.set_cols_align(["c" for node in self.nodes])
+        res_nodes.set_cols_align(["c" for i in range(0, 1 + len(disps))])     
         res_nodes.add_rows([['Node'] + [str(i) for i in range(0,len(disps))],
                     ['x'] + list(disps[:,0]), ['y'] + list(disps[:,1]), ['z'] + list(disps[:,2]),
                     [chr(952) + 'x'] + list(disps[:,3]), [chr(952) + 'y'] + list(disps[:,4]), [chr(952) + 'z'] + list(disps[:,5]),
@@ -99,7 +127,7 @@ class frame:
         print('\nCritical Load Factor: ' + str(self.deformation["crit_load_factor"]))
         print('Critical Load Vector')
         res_nodes_geo.set_precision(8)
-        res_nodes_geo.set_cols_align(["c" for node in self.nodes])
+        res_nodes_geo.set_cols_align(["c" for i in range(0, 1 + len(disps))])
         res_nodes_geo.add_rows([['Node'] + [str(i) for i in range(0,len(disps))],
                     ['eig_x'] + list(crit_load_vec[:,0]), ['eig_y'] + list(crit_load_vec[:,1]), ['eig_z'] + list(crit_load_vec[:,2]),
                     ['eig_' + chr(952) + 'x'] + list(crit_load_vec[:,3]), ['eig_' + chr(952) + 'y'] + list(crit_load_vec[:,4]), ['eig_' + chr(952) + 'z'] + list(crit_load_vec[:,5])])
@@ -107,7 +135,7 @@ class frame:
 
         print('\nLocal Coordinate Displacements and Internal Forces')
         res_elements.set_precision(8)
-        res_elements.set_cols_align(["c" for el in self.elements])
+        res_elements.set_cols_align(["c" for i in range(0, 1 + len(el_disps))])
         res_elements.add_rows([['Element'] + [str(i) for i in range(0,len(el_disps))],
                     ['dx'] + list(el_disps[:,0]), ['dy'] + list(el_disps[:,1]), ['dz'] + list(el_disps[:,2]),
                     [chr(952) + 'x'] + list(el_disps[:,3]), [chr(952) + 'y'] + list(el_disps[:,4]), [chr(952) + 'z'] + list(el_disps[:,5]),
@@ -115,26 +143,27 @@ class frame:
                     ['Mx'] + list(el_forces[:,3]), ['My'] + list(el_forces[:,4]), ['Mz'] + list(el_forces[:,5])])
         print(res_elements.draw())
 
-    def plot_deformed(self):
-        inter_coords = self.deformation["inter_coords"]
+    def plot_deformed(self, disp_type = ""):
+        if disp_type == "buckled": inter_coords = self.deformation["inter_coords_buckled"]
+        else: inter_coords = self.deformation["inter_coords"]
         ax = plt.figure().add_subplot(projection='3d')
         clrs = ['b', 'g', 'r', 'm', 'k']
-        for i, el in enumerate(self.elements): 
+        for i, el in enumerate(self.elements):
             ax.plot(inter_coords[:,i,0], inter_coords[:,i,1], inter_coords[:,i,2], color=clrs[el.xsec.id % len(clrs)])
         plt.show()
 
 class element:
-    def __init__(self, nodes, node_a: int, node_b: int, xsec, z_vec = []):
-        self.a = node_a
-        self.b = node_b
-        self.L = np.linalg.norm(nodes[node_b, 0:3] - nodes[node_a, 0:3])
+    def __init__(self, parent_frame, node_a: int, node_b: int, xsec = 0, z_vec = []):
+        (self.a, self.b) = (node_a, node_b) #tuple(sorted([node_a, node_b]))
+        self.L = np.linalg.norm(parent_frame.nodes[node_b, 0:3] - parent_frame.nodes[node_a, 0:3])
         if isinstance(xsec, list): self.xsec = xsection(xsec)
-        else: self.xsec = xsec
+        elif isinstance(xsec, xsection): self.xsec = xsec
+        else: self.xsec = parent_frame.xsecs[xsec]
 
         # Calculate coord transform and elastic stiffness matrices
-        x_vec = (nodes[node_b, 0:3] - nodes[node_a, 0:3]) / self.L
+        x_vec = (parent_frame.nodes[node_b, 0:3] - parent_frame.nodes[node_a, 0:3]) / self.L
         if len(z_vec) == 0:
-            if x_vec[0] < 0.95: z_vec = np.cross(x_vec, np.array([1, 0, 0]))
+            if abs(x_vec[0]) < 0.95: z_vec = np.cross(x_vec, np.array([1, 0, 0]))
             else: z_vec = np.cross(x_vec, np.array([0, 1, 0]))
         z_vec = z_vec / np.linalg.norm(z_vec)
         self.gamma = np.vstack((x_vec, np.cross(z_vec, x_vec), z_vec))
@@ -158,7 +187,7 @@ class element:
         gamma_full = sp.sparse.block_diag((self.gamma, self.gamma, self.gamma, self.gamma)).toarray()
         self.Ke = np.matmul(gamma_full.T, np.matmul(self.Ke_local, gamma_full))
 
-    def geo_local_stiffness(self, forces: np.array):
+    def calc_geometric_stiffness(self, forces: np.array):
         # Calculate geometric stiffness matrix (in local coordinates)
         (L, A, Ip) = (self.L, self.xsec.A, self.xsec.Ip)
         (_, _, _, _, My1, Mz1) = tuple(forces[0:6])

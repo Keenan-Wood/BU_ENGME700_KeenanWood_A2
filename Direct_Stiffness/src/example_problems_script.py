@@ -7,8 +7,8 @@ from StructuralFrame_3 import *
 
 # Functions defining each problem, running solver, and printing/plotting results
 # %%
-# Example 1 - Part 1 Code Review 1
-def solve_CR1_P1_ex1():
+# Code Review 1 - Example 1
+def solve_CR1_ex1():
     # Frame geometry definition
     nodes = np.array([[0,0,10], [15,0,10], [15,0,0]])
     elements = [[0, 1, 0, [0,0,1]], [1, 2, 0, [1,0,0]]]
@@ -31,11 +31,11 @@ def solve_CR1_P1_ex1():
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
 
-# Example 2 - Part 1 Code Review 1
-def solve_CR1_P1_ex2():
+# Code Review 1 - Example 2
+def solve_CR1_ex2():
     # Frame geometry definition
     nodes = np.array([[0,0,0], [-5,1,10], [-1,5,13], [-3,7,11], [6,9,5]])
-    elements = [[0,1,0,[]], [1,2,0,[]], [2,3,0,[]], [2,4,0,[]]]
+    elements = [[0,1], [1,2], [2,3], [2,4]]
 
     # Cross section list
     (E, v) = (500, 0.3)
@@ -46,7 +46,7 @@ def solve_CR1_P1_ex2():
     constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
 
     # Force list (node_id, forces on each DOF)
-    forces = [[1, 0.05, 0.05, -0.1, -0.05, 0.1, -0.25]]
+    forces = [[1, 0.05, 0.05, -0.1, 0, 0, 0], [2, 0, 0, 0, -0.1, -0.1, 0.3]]
 
     # Create frame, apply loads, and display results
     simple_frame = frame(nodes, xsection, elements, constraints)
@@ -55,7 +55,61 @@ def solve_CR1_P1_ex2():
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
 
-# Problem 1 and 2 - Technical Correctness 1
+# Code Review 2 - Example 1
+def solve_CR2_ex1():
+    # Frame geometry definition
+    nodes = np.array([[0,0,0], [30,40,0]])
+    elements = [[0,1]]
+
+    # Cross section list
+    (E, v) = (1000, 0.3)
+    r = 1
+    xsection = [[E, v, 'circle', [r]]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,1,1,1,1,1,1]]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[1, -3/5, -4/5, 0, 0, 0, 0]]
+
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    print("\nCode Review 2 - Problem 1:\n")
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
+
+# Code Review 2 - Example 2
+def solve_CR2_ex2():
+    # Frame geometry definition
+    (Lx, Ly, Lz) = (10, 20, 25)
+    x = [0, Lx, Lx, 0, 0, Lx, Lx, 0]
+    y = [0, 0, Ly, Ly, 0, 0, Ly, Ly]
+    z = [0, 0, 0, 0, Lz, Lz, Lz, Lz]
+    nodes = np.array([np.array([x[i], y[i], z[i], 0, 0, 0]) for i in range(0, 8)])
+    elements = [[i, i+4] for i in range(0, 4)]
+    elements.extend([4 + i, 4 + (i+1) % 4] for i in range(0, 4))
+
+    # Cross section list
+    (E, v) = (500, 0.3)
+    r = 0.5
+    xsection = [[E, v, 'circle', [r]]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[i,1,1,1,1,1,1] for i in range(0, 4)]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[i,0,0,-1,0,0,0] for i in range(4, 8)]
+
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    divided_frame = simple_frame.subdivide(2)
+    divided_frame.apply_load(forces, 20, 5)
+    print("\nCode Review 2 - Problem 2:\n")
+    divided_frame.print_deformed_results()
+    divided_frame.plot_deformed("buckled")
+
+# Technical Correctness 1 - Problems 1 and 2
 def solve_T1_problem_1_2():
     # Frame geometry definition
     (x, y, z) = (np.linspace(0, 25, 7), np.linspace(0, 50, 7), np.linspace(0, 37, 7))
@@ -93,7 +147,7 @@ def solve_T1_problem_1_2():
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
 
-# Problem 3 - Technical Correctness 1
+# Technical Correctness 1 - Problem 3
 def solve_T1_problem_3():
     # Frame geometry definition
     (L1, L2, L3, L4) = (11, 23, 15, 13)
@@ -121,11 +175,14 @@ def solve_T1_problem_3():
     simple_frame.apply_load(forces, 30)
     print("\nTechnical Correctness 1 - Problem 3:\n")
     simple_frame.print_deformed_results()
-    simple_frame.plot_deformed()
+    simple_frame.plot_deformed("buckled")
 
 # %%
-solve_CR1_P1_ex1()
-solve_CR1_P1_ex2()
+# Example Problems
+#solve_CR1_ex1()
+#solve_CR1_ex2()
+#solve_CR2_ex1()
+#solve_CR2_ex2()
 solve_T1_problem_1_2()
 solve_T1_problem_3()
 # %%
