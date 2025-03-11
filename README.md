@@ -7,27 +7,13 @@
 [![codecov](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1/graph/badge.svg?token=p5DMvJ6byO)](https://codecov.io/gh/Keenan-Wood/BU_ENGME700_KeenanWood_A1)
 [![tests](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions/workflows/tests.yml/badge.svg)](https://github.com/Keenan-Wood/BU_ENGME700_KeenanWood_A1/actions)
 
-## Apologies, the plotting functionallity for part 2 is still untested
-### Please see the example below (under Core Implementation) for how a problem should be set up, and how applying a load should be done
-### Advice on interpolating displacement (see functions in StructuralFrame_2.py) is very appreciated - thanks!
 ---
-
-<details>
-    <summary>1. Core Implementation</summary>
-    
-# Core Implementation
 
 ### Table of Contents
 * [The Method](#algo)
 * [Conda environment, installation, and testing](#install)
 * [Documentation & Examples](#tutorial)
 * [More Information](#more)
-
----
-
-### Matrix Structural Analysis <a name="algo"></a>
-
-**Matrix Structural Analysis** (To be written)
 
 ---
 
@@ -85,29 +71,31 @@ crit_factor as float
 
 ---
 
-### Tutorial <a name="tutorial"></a>
+#### **Tutorial/Examples**
 
----
-
-#### **Examples**
+The following examples are from problems posted for in-class code reviews in ENG ME700 (Spring 2025).
+They can also be found in Direct_Stiffness/src/example_problems_script.py for convenient use.
 
 ##### 1.
 
-Here is an example of how to setup and apply a load to a frame.
+Here is an example of how to create a frame, apply a load to it, and see the results.
 This example corresponds to the first one presented in "Assignment 2 - Code Review 1 - Example Problems":
 ![image](A2_ex1.png)
 
-     # Frame geometry definition
-    nodes = np.array([[0,0,10,0,0,0], [15,0,10,0,0,0], [15,0,0,0,0,0]])
-    zvec = np.array([[0,0,1], [1,0,0]])
-    elements = [[0,1,0,zvec[0,:]], [1,2,0,zvec[1,:]]]
+There are three nodes, two elements with given z-directions, and one cross section shared by all elements.
+
+Each row of the 'nodes' array contains the coordinate of a node - the index of the row is the node's id.
+
+A list of elements is created, where the parameters for each element are given as a list of two node ids, the cross section id, and the z-vector. Both the z-vector and the cross section can be omitted if the z-vector can be assumed and if there is only one cross section in the frame, respectively.
+
+    # Frame geometry definition
+    nodes = np.array([[0,0,10], [15,0,10], [15,0,0]])
+    elements = [[0, 1, 0, [0,0,1]], [1, 2, 0, [1,0,0]]]
 
     # Cross section list
-    E = 1000
-    (b, h) = (.5, 1)
-    (A, I_y, I_z, I_p, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12, .02861)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    (E, v) = (1000, 0.3)
+    (b, h, J) = (.5, 1, 0.02861)
+    xsection = [[E, v, 'rectangle', [b, h, J]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1], [2,1,1,1,0,0,0]]
@@ -115,7 +103,11 @@ This example corresponds to the first one presented in "Assignment 2 - Code Revi
     # Force list (node_id, forces on each DOF)
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
-    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    print("\nCode Review 1 - Problem 1:\n")
+    simple_frame.print_deformed_results()
 
 ##### 2. 
 
@@ -123,15 +115,13 @@ This example corresponds to the first example presented in "Assignment 2 - Code 
 ![image](A2_ex2.png)
 
     # Frame geometry definition
-    nodes = np.array([[0,0,0,0,0,0], [-5,1,10,0,0,0], [-1,5,13,0,0,0],[-3,7,11,0,0,0],[6,9,5,0,0,0]])
-    elements = [[0,1,0,[]], [1,2,0,[]], [2,3,0,[]], [2,4,0,[]]]
+    nodes = np.array([[0,0,0], [-5,1,10], [-1,5,13], [-3,7,11], [6,9,5]])
+    elements = [[0,1], [1,2], [2,3], [2,4]]
 
     # Cross section list
-    E = 500
+    (E, v) = (500, 0.3)
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    xsection = [[E, v, 'circle', [r]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
@@ -139,7 +129,12 @@ This example corresponds to the first example presented in "Assignment 2 - Code 
     # Force list (node_id, forces on each DOF)
     forces = [[1, 0.05, 0.05, -0.1, 0, 0, 0], [2, 0, 0, 0, -0.1, -0.1, 0.3]]
 
-    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    print("\nCode Review 1 - Problem 2:\n")
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
 
 #### 3.
 
@@ -147,15 +142,13 @@ This example corresponds to the first example presented in "Assignment_2_Code_Re
 ![image](A2_ex3.png)
 
     # Frame geometry definition
-    nodes = np.array([[0,0,0,0,0,0], [30,40,0,0,0,0]])
-    elements = [[0,1,0,[]]]
+    nodes = np.array([[0,0,0], [30,40,0]])
+    elements = [[0,1]]
 
     # Cross section list
-    E = 1000
+    (E, v) = (1000, 0.3)
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    xsection = [[E, v, 'circle', [r]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1]]
@@ -163,20 +156,123 @@ This example corresponds to the first example presented in "Assignment_2_Code_Re
     # Force list (node_id, forces on each DOF)
     forces = [[1, -3/5, -4/5, 0, 0, 0, 0]]
 
-    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    print("\nCode Review 2 - Problem 1:\n")
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
+
+#### 4.
+
+This example corresponds to the second example presented in "Assignment_2_Code_Review_Part_2_.pdf":
+![image](A2_ex4.png)
+
+    # Frame geometry definition
+    (Lx, Ly, Lz) = (10, 20, 25)
+    x = [0, Lx, Lx, 0, 0, Lx, Lx, 0]
+    y = [0, 0, Ly, Ly, 0, 0, Ly, Ly]
+    z = [0, 0, 0, 0, Lz, Lz, Lz, Lz]
+    nodes = np.array([np.array([x[i], y[i], z[i], 0, 0, 0]) for i in range(0, 8)])
+    elements = [[i, i+4] for i in range(0, 4)]
+    elements.extend([4 + i, 4 + (i+1) % 4] for i in range(0, 4))
+
+    # Cross section list
+    (E, v) = (500, 0.3)
+    r = 0.5
+    xsection = [[E, v, 'circle', [r]]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[i,1,1,1,1,1,1] for i in range(0, 4)]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[i,0,0,-1,0,0,0] for i in range(4, 8)]
+
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    divided_frame = simple_frame.subdivide(2)
+    divided_frame.apply_load(forces, 20, 5)
+    print("\nCode Review 2 - Problem 2:\n")
+    divided_frame.print_deformed_results()
+    divided_frame.plot_deformed("buckled")
+
+#### 5.
+
+This example corresponds to the first and second problem presented in "Assignment_2_Final_Code_Review.pdf":
+![image](A2_ex5.png)
+
+    # Frame geometry definition
+    (x, y, z) = (np.linspace(0, 25, 7), np.linspace(0, 50, 7), np.linspace(0, 37, 7))
+    nodes = np.array([np.array([x[i], y[i], z[i], 0, 0, 0]) for i in range(0, 7)])
+    elements = [[i, i+1, 0, []] for i in range(0, 6)]
+
+    # Cross section list
+    (E, v) = (10000, 0.3)
+    r = 1
+    xsection = [[E, v, 'circle', [r]]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[0,1,1,1,1,1,1]]
+
+    # Problem 1 - Force list (node_id, forces on each DOF)
+    forces = [[6, 0.05, -0.1, 0.23, 0.1, -0.025, -0.08]]
+
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    print("\nTechnical Correctness 1 - Problem 1:\n")
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
+
+    # Problem 2 - Force list (node_id, forces on each DOF)
+    P = 1
+    L = np.linalg.norm(np.array([25, 50, 37]))
+    (Fx, Fy, Fz) = (-25*P/L, -50*P/L, -37*P/L)
+    forces_2 = [[6, Fx, Fy, Fz, 0, 0, 0]]
+
+    # Create frame, apply loads, and display results
+    
+    simple_frame.apply_load(forces_2, 30)
+    print("\nTechnical Correctness 1 - Problem 2:\n")
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed()
+
+#### 6.
+
+This example corresponds to the third problem presented in "Assignment_2_Final_Code_Review.pdf":
+![image](A2_ex6.png)
+
+    # Frame geometry definition
+    (L1, L2, L3, L4) = (11, 23, 15, 13)
+    x = [0, L1, L1, 0, 0, L1, L1, 0, 0, L1, L1, 0]
+    y = [0, 0, L2, L2, 0, 0, L2, L2, 0, 0, L2, L2]
+    z = [0,0,0,0, L3,L3,L3,L3, L3+L4,L3+L4,L3+L4,L3+L4]
+    nodes = np.array([np.array([x[i], y[i], z[i], 0, 0, 0]) for i in range(0, 12)])
+    z_vec2 = np.array([0, 0, 1])
+    elements = [[i, i+4, 0, []] for i in range(0, 8)]
+    elements.extend([4*lvl + i, 4*lvl + (i+1)%4, 1, z_vec2] for i in range(0, 4) for lvl in [1,2])
+
+    # Cross section list
+    (E1, v1, E2, v2) = (10000, 0.3, 50000, 0.3)
+    (r, b, h, J2) = (1, 0.5, 1, 0.028610026041666667)
+    xsection = [[E1, v1, 'circle', [r]], [E2, v2, 'rectangle', [b, h, J2]]]
+
+    # Constraint list (node_id, fixed DOF)
+    constraints = [[i,1,1,1,1,1,1] for i in range(0,4)]
+
+    # Force list (node_id, forces on each DOF)
+    forces = [[i,0,0,-1,0,0,0] for i in range(8,12)]
+
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    print("\nTechnical Correctness 1 - Problem 3:\n")
+    simple_frame.print_deformed_results()
+    simple_frame.plot_deformed("buckled")
 
 ---
 
 ### More information <a name="more"></a>
 More information can be found here:
+* https://digitalcommons.bucknell.edu/cgi/viewcontent.cgi?article=1006&context=books
 * https://learnaboutstructures.com/Matrix-Structural-Analysis-Introduction
-
-</details>
-
-
-<details>
-    <summary>2. Visualization</summary>
-
-# Visualization
-
-</details>
