@@ -261,6 +261,9 @@ This example corresponds to the second example presented in "Assignment_2_Code_R
     divided_frame.print_deformed_results()
     divided_frame.plot_deformed("buckled")
 
+*Output: 
+![image](A2_ex4_outD.png)
+
 #### 5.
 
 This example corresponds to the first and second problem presented in "Assignment_2_Final_Code_Review.pdf":
