@@ -42,6 +42,7 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
 #### **Documentation**
 
 **Frame Class**  
+
     def __init__(self, nodes: np.array, xsection_list: list, element_list: list, constraints: list = [[]]):
         Inputs:    
         1. nodes - a numpy array (# Nodes x 6) of node coordinates  
