@@ -144,14 +144,13 @@ def test_z_vec_creation_printing_plotting():
     y = [0, 0, L2, L2, 0, 0, L2, L2, 0, 0, L2, L2]
     z = [0,0,0,0, L3,L3,L3,L3, L3+L4,L3+L4,L3+L4,L3+L4]
     nodes = np.array([np.array([x[i], y[i], z[i], 0, 0, 0]) for i in range(0, 12)])
-    z_vec2 = np.array([0, 0, 1])
-    elements = [[i, i+4, 0, []] for i in range(0, 8)]
-    elements.extend([4*lvl + i, 4*lvl + (i+1)%4, 1, z_vec2] for i in range(0, 4) for lvl in [1,2])
+    elements = [[i, i+4, 0] for i in range(0, 8)]
+    elements.extend([4*lvl + i, 4*lvl + (i+1)%4, 1] for i in range(0, 4) for lvl in [1,2])
 
     # Cross section list
     (E1, v1, E2, v2) = (10000, 0.3, 50000, 0.3)
-    (r, b, h, J2) = (1, 0.5, 1, 0.028610026041666667)
-    xsection = [[E1, v1, 'circle', [r]], [E2, v2, 'rectangle', [b, h, J2]]]
+    (r, b, h) = (1, 0.5, 1)
+    xsection = [[E1, v1, 'circle', [r]], [E2, v2, 'rectangle', [b, h]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[i,1,1,1,1,1,1] for i in range(0,4)]
@@ -165,7 +164,8 @@ def test_z_vec_creation_printing_plotting():
     print("\nTechnical Correctness 1 - Problem 3:\n")
     simple_frame.print_deformed_results()
     simple_frame.plot_deformed()
-    simple_frame.plot_deformed("buckled")
+    divided_frame = simple_frame.subdivide(2)
+    divided_frame.plot_deformed("buckled")
 
     assert NOEXCEPTION
 
