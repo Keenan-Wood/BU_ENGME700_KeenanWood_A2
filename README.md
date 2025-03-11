@@ -41,33 +41,65 @@ If you are using VSCode to run this code, don't forget to set VSCode virtual env
 
 #### **Documentation**
 
-**load_frame function**
-*(all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)*
+**Frame Class**  
+    def __init__(self, nodes: np.array, xsection_list: list, element_list: list, constraints: list = [[]]):
+        Inputs:    
+        1. nodes - a numpy array (# Nodes x 6) of node coordinates  
+                - the row number of a set of coordinates is the node's id  
+                - initializing with an array of fewer than 6 columns fills the rest with 0s  
+        2. xsection_list - A nested list of parameters defining each cross section (see XSection Class)  
+        3. element_list - A nested list of parameters defining each element (see Element Class)  
+        4. constraints - A nested list of the freedom of each DOF for each constrained node (1 for fixed, 0 for free)  
+                - ie. for pinned 'node_id1' and fixed 'node_id2':  
+                - constraints = [[node_id1, 1, 1, 1, 0, 0, 0], [node_id2, 1, 1, 1, 1, 1, 1]]  
 
-Inputs:
-1. nodes - 2D numpy array of node coordinates (#Nodes x 6)  
-    ie. for two nodes n0 and n1:  
-    nodes = np.array([[n0x, n0y, n0z, n0tx, n0ty, n0tz], [n1x, n1y, n1z, n1tx, n1ty, n1tz]])  
-    where tx, ty, and tz represent the angular coordinates of the nodes (typically 0 to start)  
+    def bending_shape_functions(self, L, N_pts):
+        # Calculate Hermite shape functions for bending displacement interpolation  
+        Inputs:  
+        1. L - length(s) of element(s), including end displacements  
+        2. N_pt - Number of interpolation points  
+        Evaluates the shape functions on a mesh defined by L and N_pts to allow returning a matrix of values for all elements at once
 
-2. elements - nested list containing element information (#Elements x 4)  
-    ie. for two elements el0 and el1:  
-    elements = [[el0_node_a_id, el0_node_b_id, el0_section_id, el0_zvec], [el1_node_a_id, el1_node_b_id, el1_section_id, el1_zvec]]  
+    def apply_load(self, applied_forces: list, N_pts: int = 10, scale = 1):  
+        # Applies a load to the frame  
+        Inputs:  
+        1. applied_forces - nested list of applied forces, with a similar format to the constraint specification  
+                -ie. applied_forces = [[node_id, Fx, Fy, Fz, Mx, My, Mz], ...]  
+        2. N_pts - number of interpolation points along each element  
+        3. scale - multiplies the applied forces to magnify the resulting displacements  
+        Results:  
+        Rewrites the frame property "deformation", a dictionary of results:  
+        "disps" - numpy array (#Nodes x 6), displacement of all nodes  
+        "forces" - numpy array (#Nodes x 6), forces at all nodes  
+        "el_disps" - numpy array (#Elements x 12), local displacements at each end of each element  
+        "el_forces" - numpy array (#Elements x 12), local forces at each end of each element  
+        "inter_coords" - numpy array (N_pts x #Elements x 6), interpolated displacements due to applied forces  
+        "crit_load_factor" - float, smallest positive eigenvalue representing approximate buckling load factor  
+        "crit_load_vec" - numpy array (#Nodes x 6), primary buckling mode shape (given as displacement for each DOF)  
+        "inter_coords_buckled" - numpy array (N_pts x #Elements x 6), interpolated displacements due to buckling mode displacments  
 
-3. xsection - nested list of section properties (#Different Sections x 7)  
-    xsection = [[E, A, I_y, I_z, I_rho, J, nu]] creates a section with ID 0 with the given properties  
+    def interpolate_displacements(self, node_disps, el_disps, N_pts):  
+        # Interpolates displacements with bending shape functions and linear axial displacement  
 
-4. constraints - nested list of fixed DOF (#Constrained Nodes x 7)  
-    ie. for node 0 with fixed z, node 3 completely fixed, and node 4 pinned:  
-    constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
+    def subdivide(self, N_div: int):  
+        # Returns new frame with elements divided into N_div subelements (with same cross sections)
+        # Keeps old nodes for easy constraint and force specification, and appends new intermediate nodes
 
-5. forces - nested list of forces on each DOF for indicated nodes (#Forced Nodes x 7)  
-    ie. forces and moments applied to node 1:  
-    forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
+    def print_deformed_results(self):  
+        # Using *Texttable*, prints an ascii table of all deformation results, for each node and for each element  
 
-Outputs:  
-(all_disps, all_forces, crit_vec) as numpy arrays with size (# Nodes x 6)  
-crit_factor as float
+    def plot_deformed(self, disp_type = ""):  
+        # Plots the deformed frame with a different color for each cross section  
+        # Setting disp_type to "buckled" plots the primary buckling mode shape instead of the displacement due to the applied load  
+
+**Element Class**
+
+
+**XSection Class**
+
+
+
+
 
 ---
 
