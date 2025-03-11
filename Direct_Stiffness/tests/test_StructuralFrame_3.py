@@ -1,20 +1,17 @@
 import numpy as np
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
-from StructuralFrame_2 import load_frame
+from StructuralFrame_3 import *
 
 def test_load_frame_simple():
     # Frame geometry definition
-    nodes = np.array([[0,0,10,0,0,0], [15,0,10,0,0,0], [15,0,0,0,0,0]])
-    zvec = np.array([[0,0,1], [1,0,0]])
-    elements = [[0,1,0,zvec[0,:]], [1,2,0,zvec[1,:]]]
+    nodes = np.array([[0,0,10], [15,0,10], [15,0,0]])
+    elements = [[0, 1, 0, [0,0,1]], [1, 2, 0, [1,0,0]]]
 
     # Cross section list
-    E = 1000
-    (b, h) = (.5, 1)
-    (A, I_y, I_z, I_p, J) = (b*h, h*b**3/12, b*h**3/12, b*h*(b**2+h**2)/12, .02861)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    (E, v) = (1000, 0.3)
+    (b, h, J) = (.5, 1, 0.02861)
+    xsection = [[E, v, 'rectangle', [b, h, J]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1], [2,1,1,1,0,0,0]]
@@ -22,7 +19,12 @@ def test_load_frame_simple():
     # Force list (node_id, forces on each DOF)
     forces = [[1, -0.05, 0.075, 0.1, -0.05, 0.1, -0.25]]
 
-    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    result = simple_frame.deformation
+
+    (all_disps, all_forces, crit_factor, crit_vec) = (result["disps"], result["forces"], result["crit_load_factor"], result["crit_load_vec"])
 
     # Check displacements
     DISPS_MATCH = True
@@ -54,15 +56,13 @@ def test_load_frame_simple():
 
 def test_load_frame_simple_2():
     # Frame geometry definition
-    nodes = np.array([[0,0,0,0,0,0], [-5,1,10,0,0,0], [-1,5,13,0,0,0],[-3,7,11,0,0,0],[6,9,5,0,0,0]])
-    elements = [[0,1,0,[]], [1,2,0,[]], [2,3,0,[]], [2,4,0,[]]]
+    nodes = np.array([[0,0,0], [-5,1,10], [-1,5,13], [-3,7,11], [6,9,5]])
+    elements = [[0,1], [1,2], [2,3], [2,4]]
 
     # Cross section list
-    E = 500
+    (E, v) = (500, 0.3)
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    xsection = [[E, v, 'circle', [r]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,0,0,1,0,0,0], [3,1,1,1,1,1,1], [4,1,1,1,0,0,0]]
@@ -70,7 +70,12 @@ def test_load_frame_simple_2():
     # Force list (node_id, forces on each DOF)
     forces = [[1, 0.05, 0.05, -0.1, 0, 0, 0], [2, 0, 0, 0, -0.1, -0.1, 0.3]]
 
-    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    result = simple_frame.deformation
+
+    (all_disps, all_forces, crit_factor, crit_vec) = (result["disps"], result["forces"], result["crit_load_factor"], result["crit_load_vec"])
 
     # Check displacements
     DISPS_MATCH = True
@@ -106,15 +111,13 @@ def test_load_frame_simple_2():
 
 def test_critical_load():
     # Frame geometry definition
-    nodes = np.array([[0,0,0,0,0,0], [30,40,0,0,0,0]])
-    elements = [[0,1,0,[]]]
+    nodes = np.array([[0,0,0], [30,40,0]])
+    elements = [[0,1]]
 
     # Cross section list
-    E = 1000
+    (E, v) = (1000, 0.3)
     r = 1
-    (A, I_y, I_z, I_p, J) = (np.pi*r**2, np.pi*r**4/4, np.pi*r**4/4, np.pi*r**4/2, np.pi*r**4/2)
-    v = .3
-    xsection = [[E, A, I_y, I_z, I_p, J, v]]
+    xsection = [[E, v, 'circle', [r]]]
 
     # Constraint list (node_id, fixed DOF)
     constraints = [[0,1,1,1,1,1,1]]
@@ -122,12 +125,18 @@ def test_critical_load():
     # Force list (node_id, forces on each DOF)
     forces = [[1, -3/5, -4/5, 0, 0, 0, 0]]
 
-    (all_disps, all_forces, crit_factor, crit_vec) = load_frame(nodes, elements, xsection, constraints, forces)
+    # Create frame, apply loads, and display results
+    simple_frame = frame(nodes, xsection, elements, constraints)
+    simple_frame.apply_load(forces, 30)
+    result = simple_frame.deformation
+
+    crit_factor = result["crit_load_factor"]
     true_crit_factor = .7809879011060754
     CRIT_FACTORS_MATCH = abs(crit_factor - true_crit_factor) < 10**-6
     
     assert CRIT_FACTORS_MATCH
 
-test_load_frame_simple()
-test_load_frame_simple_2()
-test_critical_load()
+# Debugging tests:
+#test_load_frame_simple()
+#test_load_frame_simple_2()
+#test_critical_load()
